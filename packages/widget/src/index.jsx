@@ -70,6 +70,7 @@ function VideoWidget() {
 
 function init() {
   const container = document.createElement('div')
+  // const shadow = container.attachShadow({ mode: 'closed' })
   document.body.appendChild(container)
   render(<VideoWidget />, container)
 }
