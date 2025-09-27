@@ -15,8 +15,12 @@ function VideoWidget() {
           src="/sample.mp4"
           playing={isPlaying}
           controls={false}
-          width={268}
-          height={150}
+          width="100%"
+          height="100%"
+          style={{
+            borderRadius: '8px 8px 0 0',
+            overflow: 'hidden'
+          }}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
