@@ -8,7 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "preact": "^10.26.9"
+    "preact": "^10.26.9",
+    "video.js": "^8.12.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",

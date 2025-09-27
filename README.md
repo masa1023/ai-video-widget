@@ -55,17 +55,11 @@ pnpm format:check   # Check formatting
 The widget is built as an embeddable script that can be integrated into any website:
 
 ```html
-<script src="https://your-cdn.com/video-widget.iife.js"></script>
+<style src="https://your-cdn.com/video-widget.css"></style>
+<script src="https://your-cdn.com/video-widget.iife.js"></s>
 ```
 
-The widget will automatically appear in the bottom-right corner of the page. Manual initialization is also available:
-
-```html
-<script src="https://your-cdn.com/video-widget.iife.js"></script>
-<script>
-  VideoWidget.init()
-</script>
-```
+The widget will automatically appear in the bottom-right corner of the page.
 
 ## Widget Features
 
