@@ -44,6 +44,10 @@ pnpm build
 # Build specific package
 pnpm build:widget
 pnpm build:admin
+
+# Code formatting
+pnpm format         # Format all files
+pnpm format:check   # Check formatting
 ```
 
 ## Widget Usage
@@ -59,7 +63,7 @@ The widget will automatically appear in the bottom-right corner of the page. Man
 ```html
 <script src="https://your-cdn.com/video-widget.iife.js"></script>
 <script>
-  VideoWidget.init();
+  VideoWidget.init()
 </script>
 ```
 
