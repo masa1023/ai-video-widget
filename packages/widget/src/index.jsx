@@ -19,7 +19,7 @@ function VideoWidget() {
           height="100%"
           style={{
             borderRadius: '8px 8px 0 0',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
