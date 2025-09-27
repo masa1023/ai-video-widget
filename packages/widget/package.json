@@ -1,4 +1,5 @@
 {
+	"name": "widget",
 	"private": true,
 	"type": "module",
 	"scripts": {
