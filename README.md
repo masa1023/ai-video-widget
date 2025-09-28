@@ -56,7 +56,7 @@ The widget is built as an embeddable script that can be integrated into any webs
 
 ```html
 <style src="https://your-cdn.com/video-widget.css"></style>
-<script src="https://your-cdn.com/video-widget.iife.js"></s>
+<script src="https://your-cdn.com/video-widget.iife.js"></script>
 ```
 
 The widget will automatically appear in the bottom-right corner of the page.
