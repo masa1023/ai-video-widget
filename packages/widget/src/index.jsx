@@ -1,7 +1,7 @@
 import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
-import './style.css'
+import styles from './style.css?inline'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -37,9 +37,15 @@ function VideoWidget() {
 
 function init() {
   const container = document.createElement('div')
-  // const shadow = container.attachShadow({ mode: 'closed' })
   document.body.appendChild(container)
-  render(<VideoWidget />, container)
+
+  const shadow = container.attachShadow({ mode: 'closed' })
+
+  const style = document.createElement('style')
+  style.textContent = styles
+
+  shadow.appendChild(style)
+  render(<VideoWidget />, shadow)
 }
 
 if (typeof window !== 'undefined') {
