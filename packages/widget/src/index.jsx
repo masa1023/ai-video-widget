@@ -18,18 +18,18 @@ function VideoWidget() {
           width="100%"
           height="100%"
           style={{
-            borderRadius: '8px 8px 0 0',
+            borderRadius: '12px',
             overflow: 'hidden',
           }}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
         />
-      </div>
-      <div class="controls">
-        <button class="play-button" onClick={() => setIsPlaying(!isPlaying)}>
-          {isPlaying ? '⏸️' : '▶️'}
-        </button>
+        <div class="controls">
+          <button class="play-button" onClick={() => setIsPlaying(!isPlaying)}>
+            {isPlaying ? '⏸️' : '▶️'}
+          </button>
+        </div>
       </div>
     </div>
   )
