@@ -55,7 +55,7 @@ pnpm format:check   # Check formatting
 The widget is built as an embeddable script that can be integrated into any website:
 
 ```html
-<style src="https://your-cdn.com/video-widget.css"></style>
+<link rel="stylesheet" href="https://your-cdn.com/video-widget.css" />
 <script src="https://your-cdn.com/video-widget.iife.js"></script>
 ```
 
