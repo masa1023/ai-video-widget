@@ -10,8 +10,6 @@ function VideoWidget() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [thumbnailReady, setThumbnailReady] = useState(false)
 
   const handleCircleClick = () => {
     setIsExpanded(true)
@@ -24,12 +22,9 @@ function VideoWidget() {
     setIsPlaying(false)
   }
 
-  const handleProgress = (state) => {
-    setProgress(state.played * 100)
-  }
-
-  const handleDuration = (duration) => {
-    setDuration(duration)
+  const handleTimeUpdate = () => {
+    const player = playerRef.current
+    setProgress((player.currentTime / player.duration) * 100)
   }
 
   const handleProgressBarClick = (e) => {
@@ -54,7 +49,6 @@ function VideoWidget() {
             src={videoUrl}
             muted
             playsInline
-            onLoadedData={() => setThumbnailReady(true)}
           />
           <div class="circle-play-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
@@ -65,13 +59,28 @@ function VideoWidget() {
       ) : (
         <div class="video-container">
           <div class="video-header">
-            <div class="progress-bar-container" onClick={handleProgressBarClick}>
+            <div
+              class="progress-bar-container"
+              onClick={handleProgressBarClick}
+            >
               <div class="progress-bar-bg">
-                <div class="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                <div
+                  class="progress-bar-fill"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
             </div>
             <button class="close-button" onClick={handleClose}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -90,18 +99,27 @@ function VideoWidget() {
               setIsPlaying(false)
               setIsExpanded(false)
             }}
-            onProgress={handleProgress}
-            onDuration={handleDuration}
+            onTimeUpdate={handleTimeUpdate}
           />
           <div class="video-controls" onClick={() => setIsPlaying(!isPlaying)}>
             <button class="play-button">
               {isPlaying ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <rect x="6" y="4" width="4" height="16"></rect>
                   <rect x="14" y="4" width="4" height="16"></rect>
                 </svg>
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M8 5v14l11-7z"></path>
                 </svg>
               )}
