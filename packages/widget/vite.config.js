@@ -16,6 +16,5 @@ export default defineConfig({
         globals: {},
       },
     },
-    copyPublicDir: true,
   },
 })

@@ -2,6 +2,7 @@ import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import styles from './style.css?inline'
+import videoUrl from '/sample.mp4'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -12,7 +13,7 @@ function VideoWidget() {
       <div class="video-container">
         <ReactPlayer
           ref={playerRef}
-          src="/sample.mp4"
+          src={videoUrl}
           playing={isPlaying}
           controls={false}
           width="100%"
