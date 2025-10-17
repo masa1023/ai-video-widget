@@ -1,8 +1,96 @@
 import { render } from 'preact'
-import { useRef, useState, useEffect } from 'preact/hooks'
+import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import styles from './style.css?inline'
-import videoUrl from '/sample.mp4'
+
+const videoConfig = [
+  {
+    id: 'a',
+    title: 'オープニング',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: null,
+    ctaButton: null,
+  },
+  {
+    id: 'b',
+    title: 'アループクリニックの特徴',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
+  },
+  {
+    id: 'c',
+    title: '院長・医師の紹介',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: null,
+  },
+  {
+    id: 'd',
+    title: '予約から診察の流れ',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
+  },
+  {
+    id: 'e',
+    title: '料金プランについて',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
+  },
+  {
+    id: 'f',
+    title: '施術ラインナップ',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
+  },
+  {
+    id: 'g',
+    title: 'おすすめの施術',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
+  },
+]
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -10,6 +98,9 @@ function VideoWidget() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+
+  const currentVideo = videoConfig[currentVideoIndex]
 
   const handleCircleClick = () => {
     setIsExpanded(true)
@@ -39,6 +130,18 @@ function VideoWidget() {
     }
   }
 
+  const handleVideoSelect = (videoId) => {
+    const index = videoConfig.findIndex((v) => v.id === videoId)
+    if (index === -1 || index === currentVideoIndex) return
+    setCurrentVideoIndex(index)
+    setProgress(0)
+    setIsPlaying(true)
+  }
+
+  const handleExternalLink = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div class={`video-widget ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded ? (
@@ -46,7 +149,7 @@ function VideoWidget() {
           <video
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src={videoUrl}
+            src={currentVideo.videoUrl}
             muted
             playsInline
           />
@@ -88,7 +191,7 @@ function VideoWidget() {
           </div>
           <ReactPlayer
             ref={playerRef}
-            src={videoUrl}
+            src={currentVideo.videoUrl}
             playing={isPlaying}
             controls={false}
             width="100%"
@@ -124,6 +227,46 @@ function VideoWidget() {
                 </svg>
               )}
             </button>
+          </div>
+          <div class="video-selector">
+            <div class="button-container">
+              {currentVideo.nextVideoIds.length > 0 && (
+                <div class="next-videos-section">
+                  {currentVideo.nextVideoIds.map((videoId) => {
+                    const video = videoConfig.find((v) => v.id === videoId)
+                    return video ? (
+                      <button
+                        key={videoId}
+                        class="next-video-button"
+                        onClick={() => handleVideoSelect(videoId)}
+                      >
+                        {video.title}
+                      </button>
+                    ) : null
+                  })}
+                </div>
+              )}
+              {currentVideo.detailButton && (
+                <button
+                  class="detail-button"
+                  onClick={() =>
+                    handleExternalLink(currentVideo.detailButton.link)
+                  }
+                >
+                  {currentVideo.detailButton.text}
+                </button>
+              )}
+              {currentVideo.ctaButton && (
+                <button
+                  class="cta-button"
+                  onClick={() =>
+                    handleExternalLink(currentVideo.ctaButton.link)
+                  }
+                >
+                  {currentVideo.ctaButton.text}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
