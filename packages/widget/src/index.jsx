@@ -1,8 +1,38 @@
 import { render } from 'preact'
-import { useRef, useState, useEffect } from 'preact/hooks'
+import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import styles from './style.css?inline'
-import videoUrl from '/sample.mp4'
+
+const videoConfig = [
+  {
+    text: 'オープニング',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
+  },
+  {
+    text: 'アループクリニックの特徴',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
+  },
+  {
+    text: '院長・医師の紹介',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
+  },
+  {
+    text: '予約から診察の流れ',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
+  },
+  {
+    text: '料金プランについて',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
+  },
+  {
+    text: '施術ラインナップ',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
+  },
+  {
+    text: 'おすすめの施術',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
+  },
+]
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -10,6 +40,9 @@ function VideoWidget() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+
+  const currentVideo = videoConfig[currentVideoIndex]
 
   const handleCircleClick = () => {
     setIsExpanded(true)
@@ -39,6 +72,13 @@ function VideoWidget() {
     }
   }
 
+  const handleVideoSelect = (index) => {
+    if (index === currentVideoIndex) return
+    setCurrentVideoIndex(index)
+    setProgress(0)
+    setIsPlaying(true)
+  }
+
   return (
     <div class={`video-widget ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded ? (
@@ -46,7 +86,7 @@ function VideoWidget() {
           <video
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src={videoUrl}
+            src={currentVideo.videoUrl}
             muted
             playsInline
           />
@@ -88,7 +128,7 @@ function VideoWidget() {
           </div>
           <ReactPlayer
             ref={playerRef}
-            src={videoUrl}
+            src={currentVideo.videoUrl}
             playing={isPlaying}
             controls={false}
             width="100%"
@@ -124,6 +164,19 @@ function VideoWidget() {
                 </svg>
               )}
             </button>
+          </div>
+          <div class="video-selector">
+            <div class="video-list">
+              {videoConfig.map((video, index) => (
+                <button
+                  key={index}
+                  class={`video-item ${index === currentVideoIndex ? 'active' : ''}`}
+                  onClick={() => handleVideoSelect(index)}
+                >
+                  {video.text}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
