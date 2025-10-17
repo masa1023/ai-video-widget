@@ -5,32 +5,90 @@ import styles from './style.css?inline'
 
 const videoConfig = [
   {
-    text: 'オープニング',
+    id: 'a',
+    title: 'オープニング',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: null,
+    ctaButton: null,
   },
   {
-    text: 'アループクリニックの特徴',
+    id: 'b',
+    title: 'アループクリニックの特徴',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
   },
   {
-    text: '院長・医師の紹介',
+    id: 'c',
+    title: '院長・医師の紹介',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: null,
   },
   {
-    text: '予約から診察の流れ',
+    id: 'd',
+    title: '予約から診察の流れ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
   },
   {
-    text: '料金プランについて',
+    id: 'e',
+    title: '料金プランについて',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
   },
   {
-    text: '施術ラインナップ',
+    id: 'f',
+    title: '施術ラインナップ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
   },
   {
-    text: 'おすすめの施術',
+    id: 'g',
+    title: 'おすすめの施術',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
+    nextVideoIds: ['b', 'c'],
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/about/',
+    },
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
   },
 ]
 
@@ -72,11 +130,16 @@ function VideoWidget() {
     }
   }
 
-  const handleVideoSelect = (index) => {
-    if (index === currentVideoIndex) return
+  const handleVideoSelect = (videoId) => {
+    const index = videoConfig.findIndex((v) => v.id === videoId)
+    if (index === -1 || index === currentVideoIndex) return
     setCurrentVideoIndex(index)
     setProgress(0)
     setIsPlaying(true)
+  }
+
+  const handleExternalLink = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -166,16 +229,43 @@ function VideoWidget() {
             </button>
           </div>
           <div class="video-selector">
-            <div class="video-list">
-              {videoConfig.map((video, index) => (
+            <div class="button-container">
+              {currentVideo.nextVideoIds.length > 0 && (
+                <div class="next-videos-section">
+                  {currentVideo.nextVideoIds.map((videoId) => {
+                    const video = videoConfig.find((v) => v.id === videoId)
+                    return video ? (
+                      <button
+                        key={videoId}
+                        class="next-video-button"
+                        onClick={() => handleVideoSelect(videoId)}
+                      >
+                        {video.title}
+                      </button>
+                    ) : null
+                  })}
+                </div>
+              )}
+              {currentVideo.detailButton && (
                 <button
-                  key={index}
-                  class={`video-item ${index === currentVideoIndex ? 'active' : ''}`}
-                  onClick={() => handleVideoSelect(index)}
+                  class="detail-button"
+                  onClick={() =>
+                    handleExternalLink(currentVideo.detailButton.link)
+                  }
                 >
-                  {video.text}
+                  {currentVideo.detailButton.text}
                 </button>
-              ))}
+              )}
+              {currentVideo.ctaButton && (
+                <button
+                  class="cta-button"
+                  onClick={() =>
+                    handleExternalLink(currentVideo.ctaButton.link)
+                  }
+                >
+                  {currentVideo.ctaButton.text}
+                </button>
+              )}
             </div>
           </div>
         </div>
