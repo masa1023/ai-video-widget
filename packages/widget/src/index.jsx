@@ -2,95 +2,7 @@ import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import styles from './style.css?inline'
-
-const videoConfig = [
-  {
-    id: 'a',
-    title: 'オープニング',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: null,
-    ctaButton: null,
-  },
-  {
-    id: 'b',
-    title: 'アループクリニックの特徴',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
-    },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
-  },
-  {
-    id: 'c',
-    title: '院長・医師の紹介',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
-    },
-    ctaButton: null,
-  },
-  {
-    id: 'd',
-    title: '予約から診察の流れ',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: null,
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
-  },
-  {
-    id: 'e',
-    title: '料金プランについて',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
-    },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
-  },
-  {
-    id: 'f',
-    title: '施術ラインナップ',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
-    },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
-  },
-  {
-    id: 'g',
-    title: 'おすすめの施術',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
-    nextVideoIds: ['b', 'c'],
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
-    },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
-  },
-]
+import { videoConfig } from './videoConfig.js'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -99,6 +11,7 @@ function VideoWidget() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [currentSubtitle, setCurrentSubtitle] = useState('')
 
   const currentVideo = videoConfig[currentVideoIndex]
 
@@ -115,7 +28,17 @@ function VideoWidget() {
 
   const handleTimeUpdate = () => {
     const player = playerRef.current
-    setProgress((player.currentTime / player.duration) * 100)
+    const currentTime = player.currentTime
+    setProgress((currentTime / player.duration) * 100)
+
+    // Update subtitles based on current time
+    const subtitles = currentVideo.subtitles || []
+    const activeSubtitle = subtitles.find(
+      (subtitle) => currentTime >= subtitle.start && currentTime <= subtitle.end
+    )
+    if (activeSubtitle) {
+      setCurrentSubtitle(activeSubtitle.text)
+    }
   }
 
   const handleProgressBarClick = (e) => {
@@ -135,6 +58,7 @@ function VideoWidget() {
     if (index === -1 || index === currentVideoIndex) return
     setCurrentVideoIndex(index)
     setProgress(0)
+    setCurrentSubtitle('')
     setIsPlaying(true)
   }
 
@@ -204,6 +128,11 @@ function VideoWidget() {
             }}
             onTimeUpdate={handleTimeUpdate}
           />
+          {currentSubtitle && (
+            <div class="subtitle-container">
+              <div class="subtitle-text">{currentSubtitle}</div>
+            </div>
+          )}
           <div class="video-controls" onClick={() => setIsPlaying(!isPlaying)}>
             <button class="play-button">
               {isPlaying ? (
