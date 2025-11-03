@@ -4,7 +4,6 @@ import ReactPlayer from 'react-player'
 import styles from './style.css?inline'
 import { videoConfig } from './videoConfig.js'
 
-
 function VideoWidget() {
   const playerRef = useRef(null)
   const thumbnailRef = useRef(null)
@@ -12,6 +11,7 @@ function VideoWidget() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [currentSubtitle, setCurrentSubtitle] = useState('')
 
   const currentVideo = videoConfig[currentVideoIndex]
 
@@ -28,7 +28,17 @@ function VideoWidget() {
 
   const handleTimeUpdate = () => {
     const player = playerRef.current
-    setProgress((player.currentTime / player.duration) * 100)
+    const currentTime = player.currentTime
+    setProgress((currentTime / player.duration) * 100)
+
+    // Update subtitles based on current time
+    const subtitles = currentVideo.subtitles || []
+    const activeSubtitle = subtitles.find(
+      (subtitle) => currentTime >= subtitle.start && currentTime <= subtitle.end
+    )
+    if (activeSubtitle) {
+      setCurrentSubtitle(activeSubtitle.text)
+    }
   }
 
   const handleProgressBarClick = (e) => {
@@ -48,6 +58,7 @@ function VideoWidget() {
     if (index === -1 || index === currentVideoIndex) return
     setCurrentVideoIndex(index)
     setProgress(0)
+    setCurrentSubtitle('')
     setIsPlaying(true)
   }
 
@@ -117,6 +128,11 @@ function VideoWidget() {
             }}
             onTimeUpdate={handleTimeUpdate}
           />
+          {currentSubtitle && (
+            <div class="subtitle-container">
+              <div class="subtitle-text">{currentSubtitle}</div>
+            </div>
+          )}
           <div class="video-controls" onClick={() => setIsPlaying(!isPlaying)}>
             <button class="play-button">
               {isPlaying ? (
