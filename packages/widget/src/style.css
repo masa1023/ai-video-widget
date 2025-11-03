@@ -362,7 +362,7 @@
 /* Subtitle styling */
 .subtitle-container {
   position: absolute;
-  bottom: 40%;
+  bottom: 35%;
   left: 0;
   right: 0;
   z-index: 12;
@@ -375,9 +375,10 @@
 .subtitle-text {
   display: block;
   width: 100%;
-  padding: 8px 4px;
-  background: rgba(0, 0, 0, 0.6);
-  color: rgba(255, 255, 255, 0.95);
+  padding: 4px;
+  background: white;
+  opacity: 0.9;
+  color: black;
   font-size: 14px;
   font-weight: 500;
   backdrop-filter: blur(12px) saturate(180%);
