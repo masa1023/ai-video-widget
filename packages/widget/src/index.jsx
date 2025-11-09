@@ -1,6 +1,7 @@
 import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
+import { ExternalLink } from 'lucide-react'
 import styles from './style.css?inline'
 import { videoConfig } from './videoConfig.js'
 
@@ -183,6 +184,7 @@ function VideoWidget() {
                   }
                 >
                   {currentVideo.detailButton.text}
+                  <ExternalLink size={18} />
                 </button>
               )}
               {currentVideo.ctaButton && (
@@ -193,10 +195,12 @@ function VideoWidget() {
                   }
                 >
                   {currentVideo.ctaButton.text}
+                  <ExternalLink size={18} />
                 </button>
               )}
             </div>
           </div>
+          <div class="video-footer">powered by BonsAI Video</div>
         </div>
       )}
     </div>
