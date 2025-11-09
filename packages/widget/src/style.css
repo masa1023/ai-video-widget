@@ -277,11 +277,6 @@
   left: 0;
   right: 0;
   z-index: 15;
-  background: linear-gradient(
-    to top,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.02)
-  );
   padding: 12px;
 }
 
@@ -383,6 +378,14 @@
   font-weight: 500;
   backdrop-filter: blur(12px) saturate(180%);
   word-wrap: break-word;
+}
+
+/* Video footer */
+.video-footer {
+  text-align: center;
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* Mobile adjustments */

@@ -200,6 +200,7 @@ function VideoWidget() {
               )}
             </div>
           </div>
+          <div class="video-footer">powered by BonsAI Video</div>
         </div>
       )}
     </div>
