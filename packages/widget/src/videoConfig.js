@@ -3,7 +3,6 @@ export const videoConfig = [
     id: 0,
     title: 'オープニング',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: null,
     ctaButton: null,
     subtitles: [
@@ -22,7 +21,6 @@ export const videoConfig = [
     id: 1,
     title: 'アループクリニックの特徴',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -46,7 +44,6 @@ export const videoConfig = [
     id: 2,
     title: '院長・医師の紹介',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -79,7 +76,6 @@ export const videoConfig = [
     id: 3,
     title: '予約から診察の流れ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -110,7 +106,6 @@ export const videoConfig = [
     id: 4,
     title: '料金プランについて',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -145,7 +140,6 @@ export const videoConfig = [
     id: 5,
     title: '施術ラインナップ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -176,7 +170,6 @@ export const videoConfig = [
     id: 6,
     title: 'おすすめの施術',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
-    nextVideoIds: [1, 2],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',

@@ -4,6 +4,7 @@ import ReactPlayer from 'react-player'
 import { ExternalLink } from 'lucide-react'
 import styles from './style.css?inline'
 import { videoConfig } from './videoConfig.js'
+import { navigationGraph, rootNodeId } from './navigationGraph.js'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -11,10 +12,11 @@ function VideoWidget() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [currentNodeId, setCurrentNodeId] = useState(rootNodeId)
   const [currentSubtitle, setCurrentSubtitle] = useState('')
 
-  const currentVideo = videoConfig[currentVideoIndex]
+  const currentNode = navigationGraph[currentNodeId]
+  const currentVideo = videoConfig.find((v) => v.id === currentNode.videoId)
 
   const handleCircleClick = () => {
     setIsExpanded(true)
@@ -54,10 +56,8 @@ function VideoWidget() {
     }
   }
 
-  const handleVideoSelect = (videoId) => {
-    const index = videoConfig.findIndex((v) => v.id === videoId)
-    if (index === -1 || index === currentVideoIndex) return
-    setCurrentVideoIndex(index)
+  const handleVideoSelect = (nodeId) => {
+    setCurrentNodeId(nodeId)
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -160,15 +160,15 @@ function VideoWidget() {
           </div>
           <div class="video-selector">
             <div class="button-container">
-              {currentVideo.nextVideoIds.length > 0 && (
+              {currentNode.nextNodes.length > 0 && (
                 <div class="next-videos-section">
-                  {currentVideo.nextVideoIds.map((videoId) => {
-                    const video = videoConfig.find((v) => v.id === videoId)
+                  {currentNode.nextNodes.map((nextNode) => {
+                    const video = videoConfig.find((v) => v.id === nextNode.videoId)
                     return video ? (
                       <button
-                        key={videoId}
+                        key={nextNode.id}
                         class="next-video-button"
-                        onClick={() => handleVideoSelect(videoId)}
+                        onClick={() => handleVideoSelect(nextNode.id)}
                       >
                         {video.title}
                       </button>
