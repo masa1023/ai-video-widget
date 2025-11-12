@@ -171,6 +171,38 @@
   transition: width 0.1s linear;
 }
 
+/* Back button */
+.back-button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  padding: 0;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.back-button:active {
+  transform: scale(0.9);
+}
+
+.back-button svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* Close button */
 .close-button {
   width: 32px;

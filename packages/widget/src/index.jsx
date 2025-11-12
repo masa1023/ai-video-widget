@@ -14,6 +14,7 @@ function VideoWidget() {
   const [progress, setProgress] = useState(0)
   const [currentNodeId, setCurrentNodeId] = useState(rootNodeId)
   const [currentSubtitle, setCurrentSubtitle] = useState('')
+  const [previousNodeId, setPreviousNodeId] = useState(null)
 
   const currentNode = navigationGraph[currentNodeId]
   const currentVideo = videoConfig.find((v) => v.id === currentNode.videoId)
@@ -57,7 +58,18 @@ function VideoWidget() {
   }
 
   const handleVideoSelect = (nodeId) => {
+    setPreviousNodeId(currentNodeId)
     setCurrentNodeId(nodeId)
+    setProgress(0)
+    setCurrentSubtitle('')
+    setIsPlaying(true)
+  }
+
+  const handleGoBack = () => {
+    if (!previousNodeId) return
+
+    setPreviousNodeId(currentNodeId)
+    setCurrentNodeId(previousNodeId)
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -87,6 +99,26 @@ function VideoWidget() {
       ) : (
         <div class="video-container">
           <div class="video-header">
+            {previousNodeId && (
+              <button
+                class="back-button"
+                onClick={handleGoBack}
+                title="前の動画に戻る"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+            )}
             <div
               class="progress-bar-container"
               onClick={handleProgressBarClick}
@@ -163,7 +195,9 @@ function VideoWidget() {
               {currentNode.nextNodes.length > 0 && (
                 <div class="next-videos-section">
                   {currentNode.nextNodes.map((nextNode) => {
-                    const video = videoConfig.find((v) => v.id === nextNode.videoId)
+                    const video = videoConfig.find(
+                      (v) => v.id === nextNode.videoId
+                    )
                     return video ? (
                       <button
                         key={nextNode.id}
