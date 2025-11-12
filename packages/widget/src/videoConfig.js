@@ -1,9 +1,8 @@
 export const videoConfig = [
   {
-    id: 'a',
+    id: 1,
     title: 'オープニング',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_0.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: null,
     ctaButton: null,
     subtitles: [
@@ -19,10 +18,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'b',
+    id: 2,
     title: 'アループクリニックの特徴',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_1.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -43,10 +41,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'c',
+    id: 3,
     title: '院長・医師の紹介',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -76,10 +73,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'd',
+    id: 4,
     title: '予約から診察の流れ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -107,10 +103,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'e',
+    id: 5,
     title: '料金プランについて',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -142,10 +137,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'f',
+    id: 6,
     title: '施術ラインナップ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
@@ -173,10 +167,9 @@ export const videoConfig = [
     ],
   },
   {
-    id: 'g',
+    id: 7,
     title: 'おすすめの施術',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
-    nextVideoIds: ['b', 'c'],
     detailButton: {
       text: '詳細はこちら',
       link: 'https://aloop.clinic/about/',
