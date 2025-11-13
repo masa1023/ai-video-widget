@@ -14,6 +14,7 @@ function VideoWidget() {
   const [progress, setProgress] = useState(0)
   const [currentNodeId, setCurrentNodeId] = useState(rootNodeId)
   const [currentSubtitle, setCurrentSubtitle] = useState('')
+  const [historyStack, setHistoryStack] = useState([rootNodeId])
 
   const currentNode = navigationGraph[currentNodeId]
   const currentVideo = videoConfig.find((v) => v.id === currentNode.videoId)
@@ -57,7 +58,19 @@ function VideoWidget() {
   }
 
   const handleVideoSelect = (nodeId) => {
+    setHistoryStack([...historyStack, nodeId])
     setCurrentNodeId(nodeId)
+    setProgress(0)
+    setCurrentSubtitle('')
+    setIsPlaying(true)
+  }
+
+  const handleGoBack = () => {
+    if (historyStack.length <= 1) return
+
+    const newStack = historyStack.slice(0, -1)
+    setHistoryStack(newStack)
+    setCurrentNodeId(newStack[newStack.length - 1])
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -98,21 +111,44 @@ function VideoWidget() {
                 ></div>
               </div>
             </div>
-            <button class="close-button" onClick={handleClose}>
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <div class="video-handlers">
+              <button
+                class="back-button"
+                onClick={handleGoBack}
+                title="前の動画に戻る"
+                style={{
+                  visibility: historyStack.length > 1 ? 'unset' : 'hidden',
+                }}
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+              <button class="close-button" onClick={handleClose}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
           <ReactPlayer
             ref={playerRef}
@@ -163,7 +199,9 @@ function VideoWidget() {
               {currentNode.nextNodes.length > 0 && (
                 <div class="next-videos-section">
                   {currentNode.nextNodes.map((nextNode) => {
-                    const video = videoConfig.find((v) => v.id === nextNode.videoId)
+                    const video = videoConfig.find(
+                      (v) => v.id === nextNode.videoId
+                    )
                     return video ? (
                       <button
                         key={nextNode.id}
