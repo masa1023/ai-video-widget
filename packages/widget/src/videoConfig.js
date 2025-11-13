@@ -46,9 +46,12 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_2.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
+      link: 'https://aloop.clinic/doctors/',
     },
-    ctaButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+    },
     subtitles: [
       { start: 0, end: 3, text: '皮膚科学の最前線を率いてきた山﨑院長は、' },
       { start: 4, end: 6, text: '皮膚疾患のメカニズムを熟知する、' },
@@ -76,7 +79,10 @@ export const videoConfig = [
     id: 4,
     title: '予約から診察の流れ',
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_3.mp4`,
-    detailButton: null,
+    detailButton: {
+      text: '詳細はこちら',
+      link: 'https://aloop.clinic/howtouse/',
+    },
     ctaButton: {
       text: '予約する',
       link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
@@ -108,7 +114,7 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_4.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
+      link: 'https://aloop.clinic/price/',
     },
     ctaButton: {
       text: '予約する',
@@ -142,12 +148,9 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_5.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
+      link: 'https://aloop.clinic/menu/',
     },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
+    ctaButton: null,
     subtitles: [
       { start: 0, end: 4, text: 'たるみ、シミ、毛穴、ニキビ跡。' },
       { start: 5, end: 6, text: 'つきない肌悩みに、' },
@@ -172,12 +175,9 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}/aloop/ayumi_6.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
+      link: 'https://aloop.clinic/method/',
     },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
+    ctaButton: null,
     subtitles: [
       { start: 0, end: 2, text: '自分に合う施術がわからない。' },
       { start: 3, end: 5, text: 'そんな経験ありませんか？' },
