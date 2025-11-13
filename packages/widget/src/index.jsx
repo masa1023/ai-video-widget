@@ -14,7 +14,7 @@ function VideoWidget() {
   const [progress, setProgress] = useState(0)
   const [currentNodeId, setCurrentNodeId] = useState(rootNodeId)
   const [currentSubtitle, setCurrentSubtitle] = useState('')
-  const [previousNodeId, setPreviousNodeId] = useState(null)
+  const [historyStack, setHistoryStack] = useState([rootNodeId])
 
   const currentNode = navigationGraph[currentNodeId]
   const currentVideo = videoConfig.find((v) => v.id === currentNode.videoId)
@@ -58,7 +58,7 @@ function VideoWidget() {
   }
 
   const handleVideoSelect = (nodeId) => {
-    setPreviousNodeId(currentNodeId)
+    setHistoryStack([...historyStack, nodeId])
     setCurrentNodeId(nodeId)
     setProgress(0)
     setCurrentSubtitle('')
@@ -66,10 +66,11 @@ function VideoWidget() {
   }
 
   const handleGoBack = () => {
-    if (!previousNodeId) return
+    if (historyStack.length <= 1) return
 
-    setPreviousNodeId(currentNodeId)
-    setCurrentNodeId(previousNodeId)
+    const newStack = historyStack.slice(0, -1)
+    setHistoryStack(newStack)
+    setCurrentNodeId(newStack[newStack.length - 1])
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -115,7 +116,9 @@ function VideoWidget() {
                 class="back-button"
                 onClick={handleGoBack}
                 title="前の動画に戻る"
-                style={{ visibility: previousNodeId ? 'unset' : 'hidden' }}
+                style={{
+                  visibility: historyStack.length > 1 ? 'unset' : 'hidden',
+                }}
               >
                 <svg
                   width="24"
