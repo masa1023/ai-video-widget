@@ -154,6 +154,7 @@ function VideoWidget() {
             src={currentVideo.videoUrl}
             playing={isPlaying}
             controls={false}
+            playsInline={true}
             width="100%"
             height="100%"
             onPlay={() => setIsPlaying(true)}
