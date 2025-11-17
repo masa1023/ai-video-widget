@@ -87,7 +87,7 @@ function VideoWidget() {
           <img
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src="/video-thumbnail.png"
+            src={`${import.meta.env.VITE_BASE_URL}video-thumbnail.png`}
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
