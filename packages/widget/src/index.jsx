@@ -84,12 +84,11 @@ function VideoWidget() {
     <div class={`video-widget ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded ? (
         <div class="widget-circle" onClick={handleCircleClick}>
-          <video
+          <img
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src={currentVideo.videoUrl}
-            muted
-            playsInline
+            src="/video-thumbnail.png"
+            alt="Video thumbnail"
           />
           <div class="circle-play-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
