@@ -102,7 +102,14 @@ function VideoWidget() {
           </div>
         </div>
       ) : (
-        <div class="video-container">
+        <div
+          class="video-container"
+          style={{
+            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}video-thumbnail.png)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
           <div class="video-header">
             <div
               class="progress-bar-container"
