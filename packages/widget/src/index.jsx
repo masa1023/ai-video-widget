@@ -183,11 +183,7 @@ function VideoWidget() {
             onTimeUpdate={handleTimeUpdate}
             muted={isMuted}
           />
-          {currentSubtitle && (
-            <div class="subtitle-container">
-              <div class="subtitle-text">{currentSubtitle}</div>
-            </div>
-          )}
+
           <div class="video-controls" onClick={() => setIsPlaying(!isPlaying)}>
             <button class="play-button">
               {isPlaying ? (
@@ -213,6 +209,11 @@ function VideoWidget() {
             </button>
           </div>
           <div class="video-selector">
+            {currentSubtitle && (
+              <div class="subtitle-container">
+                <div class="subtitle-text">{currentSubtitle}</div>
+              </div>
+            )}
             <div class="button-container">
               {currentNode.nextNodes.length > 0 && (
                 <div class="next-videos-section">

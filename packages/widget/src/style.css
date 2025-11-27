@@ -381,13 +381,7 @@
 
 /* Subtitle styling */
 .subtitle-container {
-  position: absolute;
-  bottom: 35%;
-  left: 0;
-  right: 0;
-  z-index: 12;
-  width: 90%;
-  margin: auto;
+  margin-bottom: 24px;
   text-align: center;
   pointer-events: none;
 }
