@@ -118,7 +118,6 @@
 .video-container {
   position: relative;
   aspect-ratio: 9 / 16;
-  background: #000;
   overflow: hidden;
   display: flex;
   flex-direction: column;
