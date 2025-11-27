@@ -173,6 +173,12 @@
   justify-content: space-between;
 }
 
+.right-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Back button */
 .back-button {
   width: 32px;
