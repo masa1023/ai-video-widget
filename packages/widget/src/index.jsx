@@ -36,9 +36,10 @@ function VideoWidget() {
   }
 
   const handleTimeUpdate = () => {
-    const player = playerRef.current
-    const currentTime = player.currentTime
-    setProgress((currentTime / player.duration) * 100)
+    const {
+      current: { currentTime, duration },
+    } = playerRef
+    setProgress((currentTime / duration) * 100)
 
     // Update subtitles based on current time
     const subtitles = currentVideo.subtitles || []
@@ -47,18 +48,6 @@ function VideoWidget() {
     )
     if (activeSubtitle) {
       setCurrentSubtitle(activeSubtitle.text)
-    }
-  }
-
-  const handleProgressBarClick = (e) => {
-    e.stopPropagation()
-    const progressBar = e.currentTarget
-    const rect = progressBar.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const percentage = clickX / rect.width
-
-    if (playerRef.current) {
-      playerRef.current.seekTo(percentage, 'fraction')
     }
   }
 
@@ -113,7 +102,7 @@ function VideoWidget() {
           <div class="video-header">
             <div
               class="progress-bar-container"
-              onClick={handleProgressBarClick}
+              // onClick={handleProgressBarClick}
             >
               <div class="progress-bar-bg">
                 <div
@@ -174,11 +163,8 @@ function VideoWidget() {
             playsInline={true}
             width="100%"
             height="100%"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
             onEnded={() => {
               setIsPlaying(false)
-              setIsExpanded(false)
             }}
             onTimeUpdate={handleTimeUpdate}
             muted={isMuted}
