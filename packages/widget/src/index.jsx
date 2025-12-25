@@ -99,10 +99,7 @@ function VideoWidget() {
           }}
         >
           <div class="video-header">
-            <div
-              class="progress-bar-container"
-              // onClick={handleProgressBarClick}
-            >
+            <div class="progress-bar-container">
               <div class="progress-bar-bg">
                 <div
                   class="progress-bar-fill"
