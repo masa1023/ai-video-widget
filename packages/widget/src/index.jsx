@@ -86,14 +86,14 @@ function VideoWidget() {
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
-            <Play size={40} fill="black" />
+            <Play size={32} fill="black" />
           </div>
         </div>
       ) : (
         <div
           class="video-container"
           style={{
-            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}video-thumbnail.png)`,
+            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}video-background.png)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
