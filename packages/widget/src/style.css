@@ -15,8 +15,8 @@
 
 /* Collapsed state (circle) */
 .video-widget.collapsed {
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 96px;
 }
 
 @media (min-width: 768px) {
@@ -101,17 +101,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: rgba(0, 0, 0, 0.4);
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+  background-color: white;
+  right: 0;
+  bottom: 0;
 }
 
 .widget-circle:hover .circle-play-icon {
-  background: rgba(0, 0, 0, 0.5);
   transform: scale(1.1);
+}
+
+.circle-play-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  padding: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow:
+    0 10px 25px -5px rgba(102, 126, 234, 0.4),
+    0 5px 10px -5px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Video container */
