@@ -5,6 +5,7 @@ import { ExternalLink, Volume2, VolumeX } from 'lucide-react'
 import styles from './style.css?inline'
 import { videoConfig } from './videoConfig.js'
 import { navigationGraph, rootNodeId } from './navigationGraph.js'
+import { Play } from 'lucide-react'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -85,9 +86,7 @@ function VideoWidget() {
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
-              <path d="M8 5v14l11-7z"></path>
-            </svg>
+            <Play size={40} fill="black" />
           </div>
         </div>
       ) : (
