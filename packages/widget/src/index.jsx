@@ -196,17 +196,17 @@ function VideoWidget() {
               </div>
             )}
             <div class="button-container">
-              {currentNode.nextNodes.length > 0 && (
+              {currentNode.nextNodeIds.length > 0 && (
                 <div class="next-videos-section">
-                  {currentNode.nextNodes.map((nextNode) => {
+                  {currentNode.nextNodeIds.map((nextNodeId) => {
                     const video = videoConfig.find(
-                      (v) => v.id === nextNode.videoId
+                      (v) => v.id === navigationGraph[nextNodeId].videoId
                     )
                     return video ? (
                       <button
-                        key={nextNode.id}
+                        key={nextNodeId}
                         class="next-video-button"
-                        onClick={() => handleVideoSelect(nextNode.id)}
+                        onClick={() => handleVideoSelect(nextNodeId)}
                       >
                         {video.title}
                       </button>
