@@ -2,7 +2,7 @@ export const videoConfig = [
   {
     id: '1',
     title: 'オープニング',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_0.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_1_haruka.mp4`,
     detailButton: null,
     ctaButton: null,
     subtitles: [
@@ -20,7 +20,7 @@ export const videoConfig = [
   {
     id: '2',
     title: 'コースについて聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_1.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_2_haruka.mp4`,
     detailButton: {
       text: '詳細はこちら',
       link: 'https://degipro.com/course',
@@ -40,7 +40,7 @@ export const videoConfig = [
   {
     id: '3',
     title: '料金について聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_2.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_2_haruka.mp4`,
     detailButton: {
       text: '詳細はこちら',
       link: 'https://degipro.com/course',
@@ -72,7 +72,7 @@ export const videoConfig = [
   {
     id: '4',
     title: '転職・キャリア支援について聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_3.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_4_haruka.mp4`,
     detailButton: null,
     ctaButton: null,
     subtitles: [
@@ -99,7 +99,7 @@ export const videoConfig = [
   {
     id: '2-1',
     title: '個人コースについて聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_4.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_2-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -130,7 +130,7 @@ export const videoConfig = [
   {
     id: '2-2',
     title: '法人コースについて聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_5.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_2-2_haruka.mp4`,
     detailButton: {
       text: '詳細はこちら',
       link: 'https://degipro.com/lp_biz_general',
@@ -160,7 +160,7 @@ export const videoConfig = [
   {
     id: '3-1',
     title: '個人コースについて聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_3-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -186,7 +186,7 @@ export const videoConfig = [
   {
     id: '3-2',
     title: '法人コースについて聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_3-2_haruka.mp4`,
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -212,7 +212,7 @@ export const videoConfig = [
   {
     id: '4-1',
     title: '転職サポートの具体的な内容を聞きたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_4-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
       text: '予約する',
@@ -238,7 +238,7 @@ export const videoConfig = [
   {
     id: '4-2',
     title: '内定実績が知りたい',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/degipro_4-2_haruka.mp4`,
     detailButton: null,
     ctaButton: {
       text: '予約する',
