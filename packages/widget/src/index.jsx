@@ -86,7 +86,7 @@ function VideoWidget() {
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
-            <Play size={32} fill="black" />
+            <Play fill="black" />
           </div>
         </div>
       ) : (

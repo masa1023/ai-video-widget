@@ -98,18 +98,16 @@
 
 .circle-play-icon {
   position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.4);
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   background-color: white;
-  right: 0;
-  bottom: 0;
+  padding: 4px;
 }
 
 .widget-circle:hover .circle-play-icon {
@@ -158,7 +156,6 @@
   z-index: 20;
   gap: 8px;
   padding: 12px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
 }
 
 /* Progress bar container */
