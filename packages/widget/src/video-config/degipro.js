@@ -1,8 +1,8 @@
 export const videoConfig = [
   {
-    id: 1,
+    id: '1',
     title: 'オープニング',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_0.mp4`,
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_0.mp4`,
     detailButton: null,
     ctaButton: null,
     subtitles: [
@@ -18,17 +18,14 @@ export const videoConfig = [
     ],
   },
   {
-    id: 2,
-    title: 'アループクリニックの特徴',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_1.mp4`,
+    id: '2',
+    title: 'コースについて聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_1.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/about/',
+      link: 'https://degipro.com/course',
     },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
+    ctaButton: null,
     subtitles: [
       { start: 0, end: 2, text: '肌理論研究に長年向き合ってきた' },
       { start: 3, end: 6, text: 'ポーラ化成が全面的に協力。' },
@@ -41,17 +38,14 @@ export const videoConfig = [
     ],
   },
   {
-    id: 3,
-    title: '院長・医師の紹介',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_2.mp4`,
+    id: '3',
+    title: '料金について聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_2.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/doctors/',
+      link: 'https://degipro.com/course',
     },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
+    ctaButton: null,
     subtitles: [
       { start: 0, end: 3, text: '皮膚科学の最前線を率いてきた山﨑院長は、' },
       { start: 4, end: 6, text: '皮膚疾患のメカニズムを熟知する、' },
@@ -76,17 +70,11 @@ export const videoConfig = [
     ],
   },
   {
-    id: 4,
-    title: '予約から診察の流れ',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_3.mp4`,
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/howtouse/',
-    },
-    ctaButton: {
-      text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
-    },
+    id: '4',
+    title: '転職・キャリア支援について聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_3.mp4`,
+    detailButton: null,
+    ctaButton: null,
     subtitles: [
       { start: 0, end: 4, text: 'WEBで1分、プランと日時を選ぶだけ。' },
       {
@@ -109,16 +97,13 @@ export const videoConfig = [
     ],
   },
   {
-    id: 5,
-    title: '料金プランについて',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_4.mp4`,
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/price/',
-    },
+    id: '2-1',
+    title: '個人コースについて聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_4.mp4`,
+    detailButton: null,
     ctaButton: {
       text: '予約する',
-      link: 'https://aloop.b4a.clinic/clinics/170/bookings/new/select/',
+      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
     },
     subtitles: [
       {
@@ -143,14 +128,17 @@ export const videoConfig = [
     ],
   },
   {
-    id: 6,
-    title: '施術ラインナップ',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_5.mp4`,
+    id: '2-2',
+    title: '法人コースについて聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_5.mp4`,
     detailButton: {
       text: '詳細はこちら',
-      link: 'https://aloop.clinic/menu/',
+      link: 'https://degipro.com/lp_biz_general',
     },
-    ctaButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://degipro.com/lp_biz_general/form/contact?inflow_route=lp_v2_landing_biz_price',
+    },
     subtitles: [
       { start: 0, end: 4, text: 'たるみ、シミ、毛穴、ニキビ跡。' },
       { start: 5, end: 6, text: 'つきない肌悩みに、' },
@@ -170,14 +158,92 @@ export const videoConfig = [
     ],
   },
   {
-    id: 7,
-    title: 'おすすめの施術',
-    videoUrl: `${import.meta.env.VITE_BASE_URL}aloop/ayumi_6.mp4`,
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://aloop.clinic/method/',
+    id: '3-1',
+    title: '個人コースについて聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
     },
-    ctaButton: null,
+    subtitles: [
+      { start: 0, end: 2, text: '自分に合う施術がわからない。' },
+      { start: 3, end: 5, text: 'そんな経験ありませんか？' },
+      { start: 6, end: 7, text: 'アループクリニックでは、' },
+      {
+        start: 8,
+        end: 12,
+        text: 'まず、あなたの肌を科学的に知ることから始まります。',
+      },
+      { start: 13, end: 15, text: '「ALOOP肌分析プラン」は、' },
+      { start: 16, end: 17, text: '研究レベルの精密な測定で、' },
+      { start: 18, end: 20, text: '肌のポテンシャルを分析。' },
+      { start: 21, end: 23, text: '医師がその科学的データに基づき、' },
+      { start: 24, end: 26, text: 'あなただけのプランをご提案します。' },
+      { start: 27, end: 31, text: 'もう、施術選びで迷うことはありません。' },
+    ],
+  },
+  {
+    id: '3-2',
+    title: '法人コースについて聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://degipro.com/lp_biz_general/form/contact?inflow_route=lp_v2_landing_biz_price',
+    },
+    subtitles: [
+      { start: 0, end: 2, text: '自分に合う施術がわからない。' },
+      { start: 3, end: 5, text: 'そんな経験ありませんか？' },
+      { start: 6, end: 7, text: 'アループクリニックでは、' },
+      {
+        start: 8,
+        end: 12,
+        text: 'まず、あなたの肌を科学的に知ることから始まります。',
+      },
+      { start: 13, end: 15, text: '「ALOOP肌分析プラン」は、' },
+      { start: 16, end: 17, text: '研究レベルの精密な測定で、' },
+      { start: 18, end: 20, text: '肌のポテンシャルを分析。' },
+      { start: 21, end: 23, text: '医師がその科学的データに基づき、' },
+      { start: 24, end: 26, text: 'あなただけのプランをご提案します。' },
+      { start: 27, end: 31, text: 'もう、施術選びで迷うことはありません。' },
+    ],
+  },
+  {
+    id: '4-1',
+    title: '転職サポートの具体的な内容を聞きたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+    },
+    subtitles: [
+      { start: 0, end: 2, text: '自分に合う施術がわからない。' },
+      { start: 3, end: 5, text: 'そんな経験ありませんか？' },
+      { start: 6, end: 7, text: 'アループクリニックでは、' },
+      {
+        start: 8,
+        end: 12,
+        text: 'まず、あなたの肌を科学的に知ることから始まります。',
+      },
+      { start: 13, end: 15, text: '「ALOOP肌分析プラン」は、' },
+      { start: 16, end: 17, text: '研究レベルの精密な測定で、' },
+      { start: 18, end: 20, text: '肌のポテンシャルを分析。' },
+      { start: 21, end: 23, text: '医師がその科学的データに基づき、' },
+      { start: 24, end: 26, text: 'あなただけのプランをご提案します。' },
+      { start: 27, end: 31, text: 'もう、施術選びで迷うことはありません。' },
+    ],
+  },
+  {
+    id: '4-2',
+    title: '内定実績が知りたい',
+    videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/ayumi_6.mp4`,
+    detailButton: null,
+    ctaButton: {
+      text: '予約する',
+      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+    },
     subtitles: [
       { start: 0, end: 2, text: '自分に合う施術がわからない。' },
       { start: 3, end: 5, text: 'そんな経験ありませんか？' },

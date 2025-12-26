@@ -3,8 +3,8 @@ import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import { ExternalLink, Volume2, VolumeX } from 'lucide-react'
 import styles from './style.css?inline'
-import { videoConfig } from './videoConfig.js'
-import { navigationGraph, rootNodeId } from './navigationGraph.js'
+import { videoConfig } from './video-config/aloop.js'
+import { navigationGraph, rootNodeId } from './navigation-graph/aloop.js'
 import { Play } from 'lucide-react'
 
 function VideoWidget() {
@@ -82,7 +82,7 @@ function VideoWidget() {
           <img
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src={`${import.meta.env.VITE_BASE_URL}video-thumbnail.png`}
+            src={`${import.meta.env.VITE_BASE_URL}aloop/video-thumbnail.png`}
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
@@ -93,7 +93,7 @@ function VideoWidget() {
         <div
           class="video-container"
           style={{
-            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}video-background.png)`,
+            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}aloop/video-background.png)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
