@@ -1,11 +1,10 @@
 import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
-import { ExternalLink, Volume2, VolumeX } from 'lucide-react'
+import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
 import { videoConfig } from './video-config/aloop.js'
 import { navigationGraph, rootNodeId } from './navigation-graph/aloop.js'
-import { Play } from 'lucide-react'
 
 function VideoWidget() {
   const playerRef = useRef(null)
