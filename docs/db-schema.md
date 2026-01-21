@@ -158,9 +158,7 @@ CREATE INDEX idx_sessions_created_at ON sessions(created_at);
 CREATE TABLE event_widget_open (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,  -- 初期表示スロット
     referrer TEXT,  -- ウィジェットを開いたページのURL
-    user_agent TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

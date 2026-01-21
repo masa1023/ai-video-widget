@@ -28,8 +28,6 @@
 
 ### sessions
 
-セッション定義：同一ブラウザ内で30分
-
 ```sql
 CREATE TABLE sessions (
     id UUID PRIMARY KEY,
