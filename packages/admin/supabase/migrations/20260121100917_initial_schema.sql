@@ -1,43 +1,9 @@
-# DB Schema - AI Video Widget
+-- AI Video Widget - Initial Schema Migration
+-- This migration creates all tables, indexes, and RLS policies
 
-## 概要
-
-マルチテナント対応のイベントトラッキングシステム用データベース設計。
-
-### 設計方針
-
-- **マルチテナント**: `projects` テーブルでプロジェクト/サイト単位の分離
-- **セッション**: 540日有効（長期ユーザー識別）
-- **スロット**: navigation-graph のノードと同義（動画 + ボタン設定 + 分岐先）
-- **進捗記録**: マイルストーン毎に1レコード（25%, 50%, 75%, 100%）
-- **字幕**: 静的ファイル管理（DB対象外）
-- **CV検知**: ウィジェットがページ遷移を監視し、`conversion_rules` と照合
-
-## ER図（概念）
-
-```
-projects (プロジェクト/サイト)
-├── videos (動画マスタ)
-├── slots (スロット = ナビゲーションノード)
-│   └── slot_transitions (スロット間遷移)
-├── conversion_rules (CV条件)
-└── sessions (セッション)
-    ├── event_widget_opens (ウィジェット展開)
-    ├── event_video_starts (動画再生開始)
-    ├── event_video_milestones (再生進捗 25/50/75/100%)
-    ├── event_clicks (ボタンクリック)
-    └── event_conversions (CV達成)
-```
-
----
-
-## テーブル定義
-
-### projects
-
-プロジェクト（マルチテナント単位）。1サイト = 1プロジェクト。
-
-```sql
+-- =============================================================================
+-- 1. projects - プロジェクト（マルチテナント単位）
+-- =============================================================================
 CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -47,13 +13,10 @@ CREATE TABLE projects (
 );
 
 CREATE INDEX idx_projects_domain ON projects(domain);
-```
 
-### videos
-
-動画マスタ。ボタン設定は `slots` テーブルで管理。
-
-```sql
+-- =============================================================================
+-- 2. videos - 動画マスタ
+-- =============================================================================
 CREATE TABLE videos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -65,13 +28,10 @@ CREATE TABLE videos (
 );
 
 CREATE INDEX idx_videos_project_id ON videos(project_id);
-```
 
-### slots
-
-スロット = navigation-graph のノード。動画とボタン設定、分岐先を持つ。
-
-```sql
+-- =============================================================================
+-- 3. slots - スロット = ナビゲーションノード
+-- =============================================================================
 CREATE TABLE slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -91,13 +51,10 @@ CREATE TABLE slots (
 
 CREATE INDEX idx_slots_project_id ON slots(project_id);
 CREATE INDEX idx_slots_video_id ON slots(video_id);
-```
 
-### slot_transitions
-
-スロット間の遷移定義（navigation-graph の `nextNodeIds` に相当）。
-
-```sql
+-- =============================================================================
+-- 4. slot_transitions - スロット間遷移
+-- =============================================================================
 CREATE TABLE slot_transitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     from_slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
@@ -109,13 +66,10 @@ CREATE TABLE slot_transitions (
 );
 
 CREATE INDEX idx_slot_transitions_from_slot_id ON slot_transitions(from_slot_id);
-```
 
-### conversion_rules
-
-CV（コンバージョン）条件の定義。
-
-```sql
+-- =============================================================================
+-- 5. conversion_rules - CV条件定義
+-- =============================================================================
 CREATE TABLE conversion_rules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -128,13 +82,10 @@ CREATE TABLE conversion_rules (
 );
 
 CREATE INDEX idx_conversion_rules_project_id ON conversion_rules(project_id);
-```
 
-### sessions
-
-セッション。540日間有効。ユーザーを一意に識別。
-
-```sql
+-- =============================================================================
+-- 6. sessions - セッション
+-- =============================================================================
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -144,17 +95,10 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_sessions_project_id ON sessions(project_id);
 CREATE INDEX idx_sessions_created_at ON sessions(created_at);
-```
 
----
-
-## イベントテーブル
-
-### event_widget_opens
-
-ウィジェット展開イベント（クリックして開いた時）。
-
-```sql
+-- =============================================================================
+-- 7. event_widget_opens - ウィジェット展開イベント
+-- =============================================================================
 CREATE TABLE event_widget_opens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -164,13 +108,10 @@ CREATE TABLE event_widget_opens (
 
 CREATE INDEX idx_event_widget_opens_session_id ON event_widget_opens(session_id);
 CREATE INDEX idx_event_widget_opens_created_at ON event_widget_opens(created_at);
-```
 
-### event_video_starts
-
-動画再生開始イベント。
-
-```sql
+-- =============================================================================
+-- 8. event_video_starts - 動画再生開始イベント
+-- =============================================================================
 CREATE TABLE event_video_starts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -183,13 +124,10 @@ CREATE INDEX idx_event_video_starts_session_id ON event_video_starts(session_id)
 CREATE INDEX idx_event_video_starts_video_id ON event_video_starts(video_id);
 CREATE INDEX idx_event_video_starts_slot_id ON event_video_starts(slot_id);
 CREATE INDEX idx_event_video_starts_created_at ON event_video_starts(created_at);
-```
 
-### event_video_milestones
-
-動画再生進捗イベント。25%, 50%, 75%, 100% 到達時に記録。
-
-```sql
+-- =============================================================================
+-- 9. event_video_milestones - 再生進捗イベント
+-- =============================================================================
 CREATE TABLE event_video_milestones (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -205,13 +143,10 @@ CREATE INDEX idx_event_video_milestones_session_id ON event_video_milestones(ses
 CREATE INDEX idx_event_video_milestones_video_id ON event_video_milestones(video_id);
 CREATE INDEX idx_event_video_milestones_slot_id ON event_video_milestones(slot_id);
 CREATE INDEX idx_event_video_milestones_created_at ON event_video_milestones(created_at);
-```
 
-### event_clicks
-
-ボタンクリックイベント（CTA、詳細ボタン、分岐ボタン）。
-
-```sql
+-- =============================================================================
+-- 10. event_clicks - ボタンクリックイベント
+-- =============================================================================
 CREATE TABLE event_clicks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -228,13 +163,10 @@ CREATE INDEX idx_event_clicks_session_id ON event_clicks(session_id);
 CREATE INDEX idx_event_clicks_slot_id ON event_clicks(slot_id);
 CREATE INDEX idx_event_clicks_click_type ON event_clicks(click_type);
 CREATE INDEX idx_event_clicks_created_at ON event_clicks(created_at);
-```
 
-### event_conversions
-
-CV達成イベント。
-
-```sql
+-- =============================================================================
+-- 11. event_conversions - CV達成イベント
+-- =============================================================================
 CREATE TABLE event_conversions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -247,137 +179,54 @@ CREATE TABLE event_conversions (
 CREATE INDEX idx_event_conversions_session_id ON event_conversions(session_id);
 CREATE INDEX idx_event_conversions_conversion_rule_id ON event_conversions(conversion_rule_id);
 CREATE INDEX idx_event_conversions_created_at ON event_conversions(created_at);
-```
 
----
+-- =============================================================================
+-- Row Level Security (RLS)
+-- =============================================================================
 
-## ウィジェット実装との対応
-
-### video-config → videos + slots
-
-現在の `videoConfig`:
-
-```javascript
-{
-  id: 1,
-  title: 'オープニング',
-  videoUrl: '...',
-  detailButton: { text: '詳細はこちら', link: '...' },
-  ctaButton: { text: '予約する', link: '...' },
-  subtitles: [...]
-}
-```
-
-→ `videos` テーブル + `slots` テーブルに分離:
-
-- `videos`: id, title, video_url, duration_seconds
-- `slots`: video_id, detail_button_text, detail_button_url, cta_button_text, cta_button_url
-
-### navigation-graph → slots + slot_transitions
-
-現在の `navigationGraph`:
-
-```javascript
-{
-  'node-1': {
-    videoId: 1,
-    nextNodeIds: ['node-2', 'node-3', 'node-4'],
-  },
-  ...
-}
-```
-
-→ `slots` + `slot_transitions` テーブルに対応:
-
-- `slots.slot_key` = 'node-1'
-- `slots.video_id` = videos.id（videoId: 1 に対応）
-- `slot_transitions` = nextNodeIds の各要素に対応
-
----
-
-## 集計クエリ例
-
-### UU（ユニークセッション）数
-
-```sql
-SELECT COUNT(DISTINCT session_id)
-FROM event_widget_opens
-WHERE created_at >= NOW() - INTERVAL '30 days';
-```
-
-### 動画再生数（動画ID別）
-
-```sql
-SELECT v.title, COUNT(*) as play_count
-FROM event_video_starts evs
-JOIN videos v ON evs.video_id = v.id
-WHERE evs.created_at >= NOW() - INTERVAL '30 days'
-GROUP BY v.id, v.title
-ORDER BY play_count DESC;
-```
-
-### 再生完了率（動画ID別）
-
-```sql
-SELECT
-    v.title,
-    COUNT(DISTINCT evs.session_id) as started,
-    COUNT(DISTINCT CASE WHEN evm.milestone = 100 THEN evm.session_id END) as completed,
-    ROUND(
-        COUNT(DISTINCT CASE WHEN evm.milestone = 100 THEN evm.session_id END)::NUMERIC
-        / NULLIF(COUNT(DISTINCT evs.session_id), 0) * 100,
-        2
-    ) as completion_rate
-FROM event_video_starts evs
-JOIN videos v ON evs.video_id = v.id
-LEFT JOIN event_video_milestones evm ON evs.video_id = evm.video_id AND evs.session_id = evm.session_id
-WHERE evs.created_at >= NOW() - INTERVAL '30 days'
-GROUP BY v.id, v.title;
-```
-
-### CV数とCV率
-
-```sql
-WITH widget_users AS (
-    SELECT DISTINCT session_id
-    FROM event_widget_opens
-    WHERE created_at >= NOW() - INTERVAL '30 days'
-),
-conversions AS (
-    SELECT DISTINCT session_id
-    FROM event_conversions
-    WHERE created_at >= NOW() - INTERVAL '30 days'
-)
-SELECT
-    (SELECT COUNT(*) FROM widget_users) as total_users,
-    (SELECT COUNT(*) FROM conversions WHERE session_id IN (SELECT session_id FROM widget_users)) as converted_users,
-    ROUND(
-        (SELECT COUNT(*) FROM conversions WHERE session_id IN (SELECT session_id FROM widget_users))::NUMERIC
-        / NULLIF((SELECT COUNT(*) FROM widget_users), 0) * 100,
-        2
-    ) as conversion_rate;
-```
-
----
-
-## Supabase RLS ポリシー例
-
-```sql
--- プロジェクトへのアクセス制御
+-- Enable RLS on all tables
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE slot_transitions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversion_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_widget_opens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_video_starts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_video_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_clicks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_conversions ENABLE ROW LEVEL SECURITY;
 
--- 例: サービスロールのみ全アクセス許可
+-- Service role full access policies
 CREATE POLICY "Service role full access" ON projects
     FOR ALL USING (auth.role() = 'service_role');
-```
 
----
+CREATE POLICY "Service role full access" ON videos
+    FOR ALL USING (auth.role() = 'service_role');
 
-## 備考
+CREATE POLICY "Service role full access" ON slots
+    FOR ALL USING (auth.role() = 'service_role');
 
-- **字幕**: 静的ファイル（VTT等）で管理。DBには保存しない。
-- **セッション有効期限**: アプリケーションレベルで `created_at + 540日` で判定。
-- **CV検知**: ウィジェットがページ遷移を監視し、`conversion_rules` の条件と照合してイベント送信。
+CREATE POLICY "Service role full access" ON slot_transitions
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON conversion_rules
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON sessions
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON event_widget_opens
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON event_video_starts
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON event_video_milestones
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON event_clicks
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access" ON event_conversions
+    FOR ALL USING (auth.role() = 'service_role');
