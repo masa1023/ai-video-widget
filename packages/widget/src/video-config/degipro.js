@@ -4,7 +4,10 @@ export const videoConfig = [
     title: 'オープニング',
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_1_haruka.mp4`,
     detailButton: null,
-    ctaButton: null,
+    ctaButton: {
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
+    },
     subtitles: [
       { start: 0, end: 1, text: 'こんにちは。' },
       { start: 2, end: 4, text: '超実践的Webマーケティングスクール' },
@@ -29,7 +32,10 @@ export const videoConfig = [
       text: '詳細はこちら',
       link: 'https://degipro.com/course',
     },
-    ctaButton: null,
+    ctaButton: {
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
+    },
     subtitles: [
       {
         start: 1,
@@ -43,11 +49,11 @@ export const videoConfig = [
     id: '3',
     title: '料金について聞きたい',
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_2_haruka.mp4`,
-    detailButton: {
-      text: '詳細はこちら',
-      link: 'https://degipro.com/course',
+    detailButton: null,
+    ctaButton: {
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
     },
-    ctaButton: null,
     subtitles: [
       {
         start: 1,
@@ -62,7 +68,10 @@ export const videoConfig = [
     title: '転職・キャリア支援について聞きたい',
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_4_haruka.mp4`,
     detailButton: null,
-    ctaButton: null,
+    ctaButton: {
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
+    },
     subtitles: [
       {
         start: 1,
@@ -80,8 +89,8 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_2-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
     },
     subtitles: [
       { start: 1, end: 1, text: '個人コースは、' },
@@ -106,8 +115,8 @@ export const videoConfig = [
       link: 'https://degipro.com/lp_biz_general',
     },
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/lp_biz_general/form/contact?inflow_route=lp_v2_landing_biz_price',
+      text: 'お問い合わせはこちら',
+      link: 'https://degipro.com/lp_biz_general/form/contact',
     },
     subtitles: [
       { start: 0, end: 1, text: '法人コースは、' },
@@ -130,8 +139,8 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_3-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
     },
     subtitles: [
       { start: 0, end: 1, text: 'マンツーマンとグループがあり' },
@@ -146,8 +155,8 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_3-2_haruka.mp4`,
     detailButton: null,
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/lp_biz_general/form/contact?inflow_route=lp_v2_landing_biz_price',
+      text: 'お問い合わせはこちら',
+      link: 'https://degipro.com/lp_biz_general/form/contact',
     },
     subtitles: [
       { start: 0, end: 1, text: '法人コースの料金は、' },
@@ -165,8 +174,8 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_4-1_haruka.mp4`,
     detailButton: null,
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
     },
     subtitles: [
       { start: 1, end: 3, text: '書類添削からWeb業界専門の模擬面接まで、' },
@@ -181,8 +190,8 @@ export const videoConfig = [
     videoUrl: `${import.meta.env.VITE_BASE_URL}degipro/videos/degipro_4-2_haruka.mp4`,
     detailButton: null,
     ctaButton: {
-      text: '予約する',
-      link: 'https://degipro.com/briefing?inflow_route=header_lp_v3_landing_top',
+      text: '無料説明会はこちら',
+      link: 'https://degipro.com/briefing',
     },
     subtitles: [
       { start: 0, end: 1, text: '直近1年半で' },
