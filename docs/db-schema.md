@@ -22,10 +22,10 @@ projects (プロジェクト/サイト)
 │   └── slot_transitions (スロット間遷移)
 ├── conversion_rules (CV条件)
 └── sessions (セッション)
-    ├── event_widget_open (ウィジェット展開)
-    ├── event_video_start (動画再生開始)
-    ├── event_video_milestone (再生進捗 25/50/75/100%)
-    ├── event_click (ボタンクリック)
+    ├── event_widget_opens (ウィジェット展開)
+    ├── event_video_starts (動画再生開始)
+    ├── event_video_milestones (再生進捗 25/50/75/100%)
+    ├── event_clicks (ボタンクリック)
     └── event_conversions (CV達成)
 ```
 
@@ -150,28 +150,28 @@ CREATE INDEX idx_sessions_created_at ON sessions(created_at);
 
 ## イベントテーブル
 
-### event_widget_open
+### event_widget_opens
 
 ウィジェット展開イベント（クリックして開いた時）。
 
 ```sql
-CREATE TABLE event_widget_open (
+CREATE TABLE event_widget_opens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     referrer TEXT,  -- ウィジェットを開いたページのURL
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_event_widget_open_session_id ON event_widget_open(session_id);
-CREATE INDEX idx_event_widget_open_created_at ON event_widget_open(created_at);
+CREATE INDEX idx_event_widget_opens_session_id ON event_widget_opens(session_id);
+CREATE INDEX idx_event_widget_opens_created_at ON event_widget_opens(created_at);
 ```
 
-### event_video_start
+### event_video_starts
 
 動画再生開始イベント。
 
 ```sql
-CREATE TABLE event_video_start (
+CREATE TABLE event_video_starts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
@@ -179,18 +179,18 @@ CREATE TABLE event_video_start (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_event_video_start_session_id ON event_video_start(session_id);
-CREATE INDEX idx_event_video_start_video_id ON event_video_start(video_id);
-CREATE INDEX idx_event_video_start_slot_id ON event_video_start(slot_id);
-CREATE INDEX idx_event_video_start_created_at ON event_video_start(created_at);
+CREATE INDEX idx_event_video_starts_session_id ON event_video_starts(session_id);
+CREATE INDEX idx_event_video_starts_video_id ON event_video_starts(video_id);
+CREATE INDEX idx_event_video_starts_slot_id ON event_video_starts(slot_id);
+CREATE INDEX idx_event_video_starts_created_at ON event_video_starts(created_at);
 ```
 
-### event_video_milestone
+### event_video_milestones
 
 動画再生進捗イベント。25%, 50%, 75%, 100% 到達時に記録。
 
 ```sql
-CREATE TABLE event_video_milestone (
+CREATE TABLE event_video_milestones (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
@@ -201,18 +201,18 @@ CREATE TABLE event_video_milestone (
     CONSTRAINT valid_milestone CHECK (milestone IN (25, 50, 75, 100))
 );
 
-CREATE INDEX idx_event_video_milestone_session_id ON event_video_milestone(session_id);
-CREATE INDEX idx_event_video_milestone_video_id ON event_video_milestone(video_id);
-CREATE INDEX idx_event_video_milestone_slot_id ON event_video_milestone(slot_id);
-CREATE INDEX idx_event_video_milestone_created_at ON event_video_milestone(created_at);
+CREATE INDEX idx_event_video_milestones_session_id ON event_video_milestones(session_id);
+CREATE INDEX idx_event_video_milestones_video_id ON event_video_milestones(video_id);
+CREATE INDEX idx_event_video_milestones_slot_id ON event_video_milestones(slot_id);
+CREATE INDEX idx_event_video_milestones_created_at ON event_video_milestones(created_at);
 ```
 
-### event_click
+### event_clicks
 
 ボタンクリックイベント（CTA、詳細ボタン、分岐ボタン）。
 
 ```sql
-CREATE TABLE event_click (
+CREATE TABLE event_clicks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
@@ -224,10 +224,10 @@ CREATE TABLE event_click (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_event_click_session_id ON event_click(session_id);
-CREATE INDEX idx_event_click_slot_id ON event_click(slot_id);
-CREATE INDEX idx_event_click_click_type ON event_click(click_type);
-CREATE INDEX idx_event_click_created_at ON event_click(created_at);
+CREATE INDEX idx_event_clicks_session_id ON event_clicks(session_id);
+CREATE INDEX idx_event_clicks_slot_id ON event_clicks(slot_id);
+CREATE INDEX idx_event_clicks_click_type ON event_clicks(click_type);
+CREATE INDEX idx_event_clicks_created_at ON event_clicks(created_at);
 ```
 
 ### event_conversions
@@ -239,7 +239,7 @@ CREATE TABLE event_conversions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     conversion_rule_id UUID NOT NULL REFERENCES conversion_rules(id) ON DELETE CASCADE,
-    last_video_start_id UUID REFERENCES event_video_start(id) ON DELETE SET NULL,  -- 直近の動画再生
+    last_video_start_id UUID REFERENCES event_video_starts(id) ON DELETE SET NULL,  -- 直近の動画再生
     matched_url TEXT,  -- CV条件にマッチしたURL
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -299,7 +299,7 @@ CREATE INDEX idx_event_conversions_created_at ON event_conversions(created_at);
 
 ```sql
 SELECT COUNT(DISTINCT session_id)
-FROM event_widget_open
+FROM event_widget_opens
 WHERE created_at >= NOW() - INTERVAL '30 days';
 ```
 
@@ -307,7 +307,7 @@ WHERE created_at >= NOW() - INTERVAL '30 days';
 
 ```sql
 SELECT v.title, COUNT(*) as play_count
-FROM event_video_start evs
+FROM event_video_starts evs
 JOIN videos v ON evs.video_id = v.id
 WHERE evs.created_at >= NOW() - INTERVAL '30 days'
 GROUP BY v.id, v.title
@@ -326,9 +326,9 @@ SELECT
         / NULLIF(COUNT(DISTINCT evs.session_id), 0) * 100,
         2
     ) as completion_rate
-FROM event_video_start evs
+FROM event_video_starts evs
 JOIN videos v ON evs.video_id = v.id
-LEFT JOIN event_video_milestone evm ON evs.video_id = evm.video_id AND evs.session_id = evm.session_id
+LEFT JOIN event_video_milestones evm ON evs.video_id = evm.video_id AND evs.session_id = evm.session_id
 WHERE evs.created_at >= NOW() - INTERVAL '30 days'
 GROUP BY v.id, v.title;
 ```
@@ -338,7 +338,7 @@ GROUP BY v.id, v.title;
 ```sql
 WITH widget_users AS (
     SELECT DISTINCT session_id
-    FROM event_widget_open
+    FROM event_widget_opens
     WHERE created_at >= NOW() - INTERVAL '30 days'
 ),
 conversions AS (
