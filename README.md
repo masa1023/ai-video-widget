@@ -49,21 +49,3 @@ pnpm build:admin
 pnpm format         # Format all files
 pnpm format:check   # Check formatting
 ```
-
-## Widget Usage
-
-The widget is built as an embeddable script that can be integrated into any website:
-
-```html
-<script src="https://your-cdn.com/video-widget.iife.js" />
-```
-
-The widget will automatically appear in the bottom-right corner of the page.
-
-## Widget Features
-
-- Fixed bottom-right positioning
-- Auto-initialization on page load
-- Self-contained with no external dependencies
-- Responsive design
-- Ready for video player integration

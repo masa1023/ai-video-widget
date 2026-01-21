@@ -32,3 +32,13 @@ Preactベースのインタラクティブ動画ウィジェット。Shadow DOM�
 
 - `video-config/`: 動画メタデータ（URL、タイトル、字幕、ボタン設定）
 - `navigation-graph/`: ノード構造（videoId、nextNodeIds）
+
+## 基本ユースケース
+
+1. `pnpm build:widget` でウィジェットをビルド
+2. ビルドファイルをCloudflareにアップロード
+3. 任意のサイトにスクリプトタグで埋め込み → 動画プレイヤーが右下に自動表示
+
+```html
+<script src="https://your-cdn.com/video-widget.iife.js"></script>
+```
