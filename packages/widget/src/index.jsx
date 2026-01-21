@@ -1,11 +1,12 @@
 import { render } from 'preact'
 import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
-import { ExternalLink, Volume2, VolumeX } from 'lucide-react'
+import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
-import { videoConfig } from './videoConfig.js'
-import { navigationGraph, rootNodeId } from './navigationGraph.js'
-import { Play } from 'lucide-react'
+import { videoConfig } from './video-config/degipro.js'
+import { navigationGraph, rootNodeId } from './navigation-graph/degipro.js'
+// import { videoConfig } from './video-config/aloop.js'
+// import { navigationGraph, rootNodeId } from './navigation-graph/aloop.js'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -82,7 +83,8 @@ function VideoWidget() {
           <img
             ref={thumbnailRef}
             class="circle-thumbnail"
-            src={`${import.meta.env.VITE_BASE_URL}video-thumbnail.png`}
+            src={`${import.meta.env.VITE_BASE_URL}degipro/video-thumbnail.png`}
+            // src={`${import.meta.env.VITE_BASE_URL}aloop/video-thumbnail.png`}
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
@@ -93,7 +95,8 @@ function VideoWidget() {
         <div
           class="video-container"
           style={{
-            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}video-background.png)`,
+            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}degipro/video-background.png)`,
+            // backgroundImage: `url(${import.meta.env.VITE_BASE_URL}aloop/video-background.png)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -197,17 +200,17 @@ function VideoWidget() {
               </div>
             )}
             <div class="button-container">
-              {currentNode.nextNodes.length > 0 && (
+              {currentNode.nextNodeIds.length > 0 && (
                 <div class="next-videos-section">
-                  {currentNode.nextNodes.map((nextNode) => {
+                  {currentNode.nextNodeIds.map((nextNodeId) => {
                     const video = videoConfig.find(
-                      (v) => v.id === nextNode.videoId
+                      (v) => v.id === navigationGraph[nextNodeId].videoId
                     )
                     return video ? (
                       <button
-                        key={nextNode.id}
+                        key={nextNodeId}
                         class="next-video-button"
-                        onClick={() => handleVideoSelect(nextNode.id)}
+                        onClick={() => handleVideoSelect(nextNodeId)}
                       >
                         {video.title}
                       </button>
