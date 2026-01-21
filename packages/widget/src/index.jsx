@@ -5,6 +5,8 @@ import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
 import { videoConfig } from './video-config/degipro.js'
 import { navigationGraph, rootNodeId } from './navigation-graph/degipro.js'
+// import { videoConfig } from './video-config/aloop.js'
+// import { navigationGraph, rootNodeId } from './navigation-graph/aloop.js'
 
 function VideoWidget() {
   const playerRef = useRef(null)
@@ -82,6 +84,7 @@ function VideoWidget() {
             ref={thumbnailRef}
             class="circle-thumbnail"
             src={`${import.meta.env.VITE_BASE_URL}degipro/video-thumbnail.png`}
+            // src={`${import.meta.env.VITE_BASE_URL}aloop/video-thumbnail.png`}
             alt="Video thumbnail"
           />
           <div class="circle-play-icon">
@@ -93,6 +96,7 @@ function VideoWidget() {
           class="video-container"
           style={{
             backgroundImage: `url(${import.meta.env.VITE_BASE_URL}degipro/video-background.png)`,
+            // backgroundImage: `url(${import.meta.env.VITE_BASE_URL}aloop/video-background.png)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
