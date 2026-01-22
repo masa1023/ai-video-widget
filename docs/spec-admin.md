@@ -77,13 +77,75 @@ packages/admin/
 - **機能**:
   - Supabase Auth でユーザー作成
   - 確認メール送信
-  - `profiles` テーブルに自動レコード作成（トリガー）
-- **備考**: 初期運用では Supabase ダッシュボードから招待
+  - `profiles` テーブルにレコード作成（アプリケーション側で organization_id と共に作成）
+- **備考**: 初期運用では招待フローを使用（下記参照）
 
 #### `/reset-password` - パスワードリセット
 
 - **入力フィールド**: メールアドレス
 - **機能**: リセットメール送信
+
+---
+
+## 組織・ユーザー管理
+
+### ER構造
+
+```
+auth.users (Supabase Auth)
+└── profiles (ユーザープロフィール + 組織所属)
+    └── organizations (企業/組織)
+        └── projects (プロジェクト)
+```
+
+- 1ユーザー = 1組織に所属（シンプル構造）
+- 1組織 = 複数プロジェクト
+- role は `owner`, `admin`, `viewer` の enum（当面は `owner` のみ使用）
+
+### 初期運用フロー（招待ベース）
+
+1. **組織作成**（運営が Supabase Dashboard で実行）
+   ```sql
+   INSERT INTO organizations (name) VALUES ('株式会社サンプル');
+   ```
+
+2. **ユーザー招待**（Supabase Dashboard の Auth → Users → Invite）
+   - メールアドレスを入力
+   - 招待メールが送信される
+
+3. **profiles レコード作成**（運営が Supabase Dashboard で実行）
+   ```sql
+   INSERT INTO profiles (id, organization_id, email, display_name, role)
+   VALUES (
+       '[auth.users の id]',
+       '[organizations の id]',
+       'user@example.com',
+       '山田太郎',
+       'owner'
+   );
+   ```
+
+4. **ユーザーがパスワード設定**
+   - 招待メールのリンクをクリック
+   - パスワードを設定してログイン
+
+### 将来の改善案
+
+- 管理画面からの招待機能実装
+- 組織内メンバー管理 UI
+- セルフサインアップ + 組織作成フロー
+
+### RLS によるアクセス制御
+
+| テーブル | アクセス範囲 |
+|---------|-------------|
+| profiles | 自分のレコードのみ |
+| organizations | 自分の組織のみ |
+| projects | 自分の組織のプロジェクトのみ |
+| videos, slots, etc. | 自分の組織のプロジェクト配下のみ |
+| sessions, event_* | 自分の組織のプロジェクト配下のみ（読み取りのみ） |
+
+---
 
 ### 認証ミドルウェア
 

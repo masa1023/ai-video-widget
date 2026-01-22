@@ -6,7 +6,9 @@
 
 ### 設計方針
 
-- **マルチテナント**: `projects` テーブルでプロジェクト/サイト単位の分離
+- **マルチテナント**: `organizations` → `projects` の階層でテナント分離
+- **認証**: Supabase Auth (`auth.users`) + `profiles` テーブル
+- **組織構造**: 1ユーザー = 1組織に所属（シンプル）、1組織 = 複数プロジェクト
 - **セッション**: 540日有効（長期ユーザー識別）
 - **スロット**: navigation-graph のノードと同義（動画 + ボタン設定 + 分岐先）
 - **進捗記録**: マイルストーン毎に1レコード（25%, 50%, 75%, 100%）
@@ -16,36 +18,75 @@
 ## ER図（概念）
 
 ```
-projects (プロジェクト/サイト)
-├── videos (動画マスタ)
-├── slots (スロット = ナビゲーションノード)
-│   └── slot_transitions (スロット間遷移)
-├── conversion_rules (CV条件)
-└── sessions (セッション)
-    ├── event_widget_opens (ウィジェット展開)
-    ├── event_video_starts (動画再生開始)
-    ├── event_video_milestones (再生進捗 25/50/75/100%)
-    ├── event_clicks (ボタンクリック)
-    └── event_conversions (CV達成)
+auth.users (Supabase Auth)
+└── profiles (ユーザープロフィール + 組織所属)
+    └── organizations (企業/組織)
+        └── projects (プロジェクト/サイト)
+            ├── videos (動画マスタ)
+            ├── slots (スロット = ナビゲーションノード)
+            │   └── slot_transitions (スロット間遷移)
+            ├── conversion_rules (CV条件)
+            └── sessions (セッション)
+                ├── event_widget_opens (ウィジェット展開)
+                ├── event_video_starts (動画再生開始)
+                ├── event_video_milestones (再生進捗 25/50/75/100%)
+                ├── event_clicks (ボタンクリック)
+                └── event_conversions (CV達成)
 ```
 
 ---
 
 ## テーブル定義
 
+### organizations
+
+企業/組織。マルチテナントの最上位単位。
+
+```sql
+CREATE TABLE organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### profiles
+
+ユーザープロフィール。`auth.users` と 1:1 で紐づく。
+
+```sql
+CREATE TYPE member_role AS ENUM ('owner', 'admin', 'viewer');
+
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    display_name TEXT,
+    role member_role NOT NULL DEFAULT 'owner',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_profiles_organization_id ON profiles(organization_id);
+CREATE INDEX idx_profiles_email ON profiles(email);
+```
+
 ### projects
 
-プロジェクト（マルチテナント単位）。1サイト = 1プロジェクト。
+プロジェクト（組織配下）。1サイト = 1プロジェクト。
 
 ```sql
 CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     domain TEXT,  -- 例: "example.com"（オプション）
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_projects_organization_id ON projects(organization_id);
 CREATE INDEX idx_projects_domain ON projects(domain);
 ```
 
@@ -251,6 +292,128 @@ CREATE INDEX idx_event_conversions_created_at ON event_conversions(created_at);
 
 ---
 
+## RLS ポリシー
+
+### ヘルパー関数
+
+```sql
+-- ユーザーの組織IDを取得
+CREATE FUNCTION get_user_organization_id()
+RETURNS UUID AS $$
+BEGIN
+    RETURN (SELECT organization_id FROM profiles WHERE id = auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- プロジェクトが自分の組織に属するか確認
+CREATE FUNCTION is_my_organization_project(project_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM projects p
+        WHERE p.id = project_id
+        AND p.organization_id = get_user_organization_id()
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+```
+
+### ポリシー定義
+
+```sql
+-- profiles: 自分のレコードのみ参照可能
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+-- organizations: 自分の組織のみ参照可能
+CREATE POLICY "Users can view own organization" ON organizations
+    FOR SELECT USING (id = get_user_organization_id());
+
+-- projects: 自分の組織のプロジェクトのみ
+CREATE POLICY "Users can access own org projects" ON projects
+    FOR ALL USING (organization_id = get_user_organization_id());
+
+-- videos: プロジェクト経由で確認
+CREATE POLICY "Users can access own org videos" ON videos
+    FOR ALL USING (is_my_organization_project(project_id));
+
+-- slots: プロジェクト経由で確認
+CREATE POLICY "Users can access own org slots" ON slots
+    FOR ALL USING (is_my_organization_project(project_id));
+
+-- slot_transitions: スロット経由で確認
+CREATE POLICY "Users can access own org slot_transitions" ON slot_transitions
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM slots s
+            WHERE s.id = from_slot_id
+            AND is_my_organization_project(s.project_id)
+        )
+    );
+
+-- conversion_rules: プロジェクト経由で確認
+CREATE POLICY "Users can access own org conversion_rules" ON conversion_rules
+    FOR ALL USING (is_my_organization_project(project_id));
+
+-- sessions: プロジェクト経由で確認
+CREATE POLICY "Users can access own org sessions" ON sessions
+    FOR ALL USING (is_my_organization_project(project_id));
+
+-- event_*: セッション経由で確認
+CREATE POLICY "Users can access own org event_widget_opens" ON event_widget_opens
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM sessions s
+            WHERE s.id = session_id
+            AND is_my_organization_project(s.project_id)
+        )
+    );
+
+-- （他のイベントテーブルも同様）
+```
+
+### Service Role ポリシー
+
+```sql
+-- 各テーブルに service_role 用のフルアクセスポリシーを設定
+CREATE POLICY "Service role full access" ON [table_name]
+    FOR ALL USING (auth.role() = 'service_role');
+```
+
+---
+
+## トリガー
+
+### ユーザー作成時の profiles 自動作成
+
+```sql
+CREATE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO profiles (id, email, display_name)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+```
+
+**注意**: このトリガーでは `organization_id` を設定していません。初期運用では:
+1. 運営側が Supabase Dashboard で organization を作成
+2. ユーザー招待時に organization_id を手動で設定
+
+---
+
 ## ウィジェット実装との対応
 
 ### video-config → videos + slots
@@ -360,24 +523,9 @@ SELECT
 
 ---
 
-## Supabase RLS ポリシー例
-
-```sql
--- プロジェクトへのアクセス制御
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE videos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE slots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
-
--- 例: サービスロールのみ全アクセス許可
-CREATE POLICY "Service role full access" ON projects
-    FOR ALL USING (auth.role() = 'service_role');
-```
-
----
-
 ## 備考
 
 - **字幕**: 静的ファイル（VTT等）で管理。DBには保存しない。
 - **セッション有効期限**: アプリケーションレベルで `created_at + 540日` で判定。
 - **CV検知**: ウィジェットがページ遷移を監視し、`conversion_rules` の条件と照合してイベント送信。
+- **role**: 当面は `owner` のみ使用。将来的に `admin`, `viewer` を活用予定。
