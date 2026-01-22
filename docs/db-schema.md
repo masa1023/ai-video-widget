@@ -409,6 +409,7 @@ CREATE TRIGGER on_auth_user_created
 ```
 
 **注意**: このトリガーでは `organization_id` を設定していません。初期運用では:
+
 1. 運営側が Supabase Dashboard で organization を作成
 2. ユーザー招待時に organization_id を手動で設定
 

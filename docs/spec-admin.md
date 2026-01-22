@@ -105,6 +105,7 @@ auth.users (Supabase Auth)
 ### 初期運用フロー（招待ベース）
 
 1. **組織作成**（運営が Supabase Dashboard で実行）
+
    ```sql
    INSERT INTO organizations (name) VALUES ('株式会社サンプル');
    ```
@@ -114,6 +115,7 @@ auth.users (Supabase Auth)
    - 招待メールが送信される
 
 3. **profiles レコード作成**（運営が Supabase Dashboard で実行）
+
    ```sql
    INSERT INTO profiles (id, organization_id, email, display_name, role)
    VALUES (
@@ -137,13 +139,13 @@ auth.users (Supabase Auth)
 
 ### RLS によるアクセス制御
 
-| テーブル | アクセス範囲 |
-|---------|-------------|
-| profiles | 自分のレコードのみ |
-| organizations | 自分の組織のみ |
-| projects | 自分の組織のプロジェクトのみ |
-| videos, slots, etc. | 自分の組織のプロジェクト配下のみ |
-| sessions, event_* | 自分の組織のプロジェクト配下のみ（読み取りのみ） |
+| テーブル            | アクセス範囲                                     |
+| ------------------- | ------------------------------------------------ |
+| profiles            | 自分のレコードのみ                               |
+| organizations       | 自分の組織のみ                                   |
+| projects            | 自分の組織のプロジェクトのみ                     |
+| videos, slots, etc. | 自分の組織のプロジェクト配下のみ                 |
+| sessions, event\_\* | 自分の組織のプロジェクト配下のみ（読み取りのみ） |
 
 ---
 
