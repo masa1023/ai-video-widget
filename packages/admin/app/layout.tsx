@@ -1,15 +1,16 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from "@/components/ui/sonner"
 import './globals.css'
 
-const _inter = Inter({ subsets: ["latin"] });
+const _geist = Geist({ subsets: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Bonsai Video - Interactive Video Management',
-  description: 'Manage your interactive video content with Bonsai Video',
+  title: 'Bonsai Video - Interactive Video Widget Platform',
+  description: 'Create and manage interactive video widgets with branching navigation for your website',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -39,7 +40,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster position="top-right" richColors />
         <Analytics />
       </body>
     </html>
