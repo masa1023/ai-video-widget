@@ -1,5 +1,5 @@
 {
-  "name": "widget",
+  "name": "bonsai-video-widget",
   "private": true,
   "type": "module",
   "scripts": {
