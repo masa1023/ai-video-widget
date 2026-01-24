@@ -1,25 +1,25 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,13 +38,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -52,11 +52,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { Skeleton } from "@/components/ui/skeleton"
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Plus,
   Target,
@@ -66,10 +66,10 @@ import {
   AlertCircle,
   Eye,
   MousePointer,
-} from "lucide-react"
-import { toast } from "sonner"
+} from 'lucide-react'
+import { toast } from 'sonner'
 
-type ConversionType = "click" | "video_view"
+type ConversionType = 'click' | 'video_view'
 
 interface ConversionRuleType {
   id: string
@@ -88,7 +88,7 @@ interface SlotType {
   video_id: string
   name: string
   is_entry_point: boolean
-  button_type: "cta" | "detail" | "transition"
+  button_type: 'cta' | 'detail' | 'transition'
   button_label: string
   button_url: string | null
   position_x: number
@@ -109,16 +109,16 @@ export default function ConversionsPage() {
 
   // Create state
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [createName, setCreateName] = useState("")
-  const [createType, setCreateType] = useState<ConversionType>("click")
-  const [createSlotId, setCreateSlotId] = useState<string>("")
-  const [createUrlPattern, setCreateUrlPattern] = useState("")
+  const [createName, setCreateName] = useState('')
+  const [createType, setCreateType] = useState<ConversionType>('click')
+  const [createSlotId, setCreateSlotId] = useState<string>('')
+  const [createUrlPattern, setCreateUrlPattern] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
   // Edit state
   const [editRule, setEditRule] = useState<ConversionRuleType | null>(null)
-  const [editName, setEditName] = useState("")
+  const [editName, setEditName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Delete state
@@ -132,34 +132,34 @@ export default function ConversionsPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     // Get user role
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
       .single()
 
     setUserRole(profile?.role || null)
 
     // Get conversion rules
     const { data: rulesData } = await supabase
-      .from("conversion_rules")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
+      .from('conversion_rules')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
 
     setRules(rulesData || [])
 
     // Get slots for dropdown
     const { data: slotsData } = await supabase
-      .from("slots")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("name")
+      .from('slots')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('name')
 
     setSlots(slotsData || [])
 
@@ -170,29 +170,29 @@ export default function ConversionsPage() {
     loadData()
   }, [loadData])
 
-  const canEdit = userRole === "owner" || userRole === "admin"
+  const canEdit = userRole === 'owner' || userRole === 'admin'
 
   const getSlotName = (slotId: string | null) => {
     if (!slotId) return null
     const slot = slots.find((s) => s.id === slotId)
-    return slot?.name || "Unknown Slot"
+    return slot?.name || 'Unknown Slot'
   }
 
   const handleCreate = async () => {
     setCreateError(null)
 
     if (!createName.trim()) {
-      setCreateError("Name is required")
+      setCreateError('Name is required')
       return
     }
 
-    if (createType === "video_view" && !createSlotId) {
-      setCreateError("Please select a slot for video view tracking")
+    if (createType === 'video_view' && !createSlotId) {
+      setCreateError('Please select a slot for video view tracking')
       return
     }
 
-    if (createType === "click" && !createUrlPattern.trim() && !createSlotId) {
-      setCreateError("Please specify a URL pattern or select a slot")
+    if (createType === 'click' && !createUrlPattern.trim() && !createSlotId) {
+      setCreateError('Please specify a URL pattern or select a slot')
       return
     }
 
@@ -202,7 +202,7 @@ export default function ConversionsPage() {
       const supabase = createClient()
 
       const { data, error } = await supabase
-        .from("conversion_rules")
+        .from('conversion_rules')
         .insert({
           project_id: projectId,
           name: createName.trim(),
@@ -220,13 +220,13 @@ export default function ConversionsPage() {
 
       setRules([data, ...rules])
       setIsCreateOpen(false)
-      setCreateName("")
-      setCreateType("click")
-      setCreateSlotId("")
-      setCreateUrlPattern("")
-      toast.success("Conversion rule created")
+      setCreateName('')
+      setCreateType('click')
+      setCreateSlotId('')
+      setCreateUrlPattern('')
+      toast.success('Conversion rule created')
     } catch (err) {
-      setCreateError("An unexpected error occurred")
+      setCreateError('An unexpected error occurred')
     } finally {
       setIsCreating(false)
     }
@@ -241,9 +241,9 @@ export default function ConversionsPage() {
       const supabase = createClient()
 
       const { error } = await supabase
-        .from("conversion_rules")
+        .from('conversion_rules')
         .update({ name: editName.trim() })
-        .eq("id", editRule.id)
+        .eq('id', editRule.id)
 
       if (error) {
         toast.error(error.message)
@@ -256,9 +256,9 @@ export default function ConversionsPage() {
         )
       )
       setEditRule(null)
-      toast.success("Rule updated")
+      toast.success('Rule updated')
     } catch (err) {
-      toast.error("Failed to update rule")
+      toast.error('Failed to update rule')
     } finally {
       setIsSaving(false)
     }
@@ -273,9 +273,9 @@ export default function ConversionsPage() {
       const supabase = createClient()
 
       const { error } = await supabase
-        .from("conversion_rules")
+        .from('conversion_rules')
         .delete()
-        .eq("id", deleteRule.id)
+        .eq('id', deleteRule.id)
 
       if (error) {
         toast.error(error.message)
@@ -284,9 +284,9 @@ export default function ConversionsPage() {
 
       setRules(rules.filter((r) => r.id !== deleteRule.id))
       setDeleteRule(null)
-      toast.success("Rule deleted")
+      toast.success('Rule deleted')
     } catch (err) {
-      toast.error("Failed to delete rule")
+      toast.error('Failed to delete rule')
     } finally {
       setIsDeleting(false)
     }
@@ -357,7 +357,9 @@ export default function ConversionsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="click">Button Click</SelectItem>
-                      <SelectItem value="video_view">Video View (80%+)</SelectItem>
+                      <SelectItem value="video_view">
+                        Video View (80%+)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -381,7 +383,7 @@ export default function ConversionsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                {createType === "click" && (
+                {createType === 'click' && (
                   <div className="space-y-2">
                     <Label htmlFor="pattern">URL Pattern (optional)</Label>
                     <Input
@@ -413,7 +415,7 @@ export default function ConversionsPage() {
                       Creating...
                     </>
                   ) : (
-                    "Create"
+                    'Create'
                   )}
                 </Button>
               </DialogFooter>
@@ -440,7 +442,7 @@ export default function ConversionsPage() {
                   <TableCell className="font-medium">{rule.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {rule.conversion_type === "click" ? (
+                      {rule.conversion_type === 'click' ? (
                         <>
                           <MousePointer className="mr-1 h-3 w-3" />
                           Click
@@ -456,7 +458,7 @@ export default function ConversionsPage() {
                   <TableCell className="text-muted-foreground">
                     {rule.target_slot_id
                       ? getSlotName(rule.target_slot_id)
-                      : rule.target_url_pattern || "Any"}
+                      : rule.target_url_pattern || 'Any'}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(rule.created_at).toLocaleDateString()}
@@ -465,7 +467,11 @@ export default function ConversionsPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreVertical className="h-4 w-4" />
                             <span className="sr-only">Actions</span>
                           </Button>
@@ -547,14 +553,17 @@ export default function ConversionsPage() {
             >
               Cancel
             </Button>
-            <Button onClick={handleEdit} disabled={!editName.trim() || isSaving}>
+            <Button
+              onClick={handleEdit}
+              disabled={!editName.trim() || isSaving}
+            >
               {isSaving ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
                   Saving...
                 </>
               ) : (
-                "Save"
+                'Save'
               )}
             </Button>
           </DialogFooter>
@@ -575,7 +584,9 @@ export default function ConversionsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
@@ -587,7 +598,7 @@ export default function ConversionsPage() {
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

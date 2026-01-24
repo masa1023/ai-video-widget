@@ -1,10 +1,10 @@
-import React from "react"
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { DashboardSidebar } from "@/components/dashboard/sidebar"
-import { DashboardHeader } from "@/components/dashboard/header"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { Toaster } from "@/components/ui/sonner"
+import React from 'react'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { DashboardSidebar } from '@/components/dashboard/sidebar'
+import { DashboardHeader } from '@/components/dashboard/header'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
 
 export default async function DashboardLayout({
   children,
@@ -18,12 +18,12 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Get user profile with organization
   const { data: profile } = await supabase
-    .from("profiles")
+    .from('profiles')
     .select(
       `
       *,
@@ -34,11 +34,11 @@ export default async function DashboardLayout({
       )
     `
     )
-    .eq("id", user.id)
+    .eq('id', user.id)
     .single()
 
   if (!profile) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Check organization status
@@ -47,24 +47,24 @@ export default async function DashboardLayout({
     name: string
     status: string
   } | null
-  if (!organization || organization.status !== "active") {
-    redirect("/login")
+  if (!organization || organization.status !== 'active') {
+    redirect('/login')
   }
 
   // Get projects for sidebar
   const { data: projects } = await supabase
-    .from("projects")
-    .select("id, name")
-    .eq("organization_id", organization.id)
-    .order("created_at", { ascending: false })
+    .from('projects')
+    .select('id, name')
+    .eq('organization_id', organization.id)
+    .order('created_at', { ascending: false })
 
   return (
     <SidebarProvider>
       <DashboardSidebar
         user={{
           id: user.id,
-          email: user.email || "",
-          displayName: profile.display_name || user.email?.split("@")[0] || "",
+          email: user.email || '',
+          displayName: profile.display_name || user.email?.split('@')[0] || '',
           role: profile.role,
         }}
         organization={{

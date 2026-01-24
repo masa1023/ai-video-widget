@@ -1,20 +1,20 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,17 +33,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Progress } from "@/components/ui/progress"
+} from '@/components/ui/dropdown-menu'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Progress } from '@/components/ui/progress'
 import {
   Plus,
   Video,
@@ -54,8 +54,8 @@ import {
   Upload,
   Clock,
   FileVideo,
-} from "lucide-react"
-import { toast } from "sonner"
+} from 'lucide-react'
+import { toast } from 'sonner'
 
 interface VideoType {
   id: string
@@ -79,7 +79,7 @@ export default function VideosPage() {
 
   // Upload state
   const [isUploadOpen, setIsUploadOpen] = useState(false)
-  const [uploadTitle, setUploadTitle] = useState("")
+  const [uploadTitle, setUploadTitle] = useState('')
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
@@ -87,7 +87,7 @@ export default function VideosPage() {
 
   // Edit state
   const [editVideo, setEditVideo] = useState<VideoType | null>(null)
-  const [editTitle, setEditTitle] = useState("")
+  const [editTitle, setEditTitle] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Delete state
@@ -101,28 +101,28 @@ export default function VideosPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     // Get user role
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
       .single()
 
     setUserRole(profile?.role || null)
 
     // Get videos
     const { data, error } = await supabase
-      .from("videos")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
+      .from('videos')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
 
     if (error) {
-      toast.error("Failed to load videos")
+      toast.error('Failed to load videos')
       return
     }
 
@@ -134,13 +134,13 @@ export default function VideosPage() {
     loadVideos()
   }, [loadVideos])
 
-  const canEdit = userRole === "owner" || userRole === "admin"
+  const canEdit = userRole === 'owner' || userRole === 'admin'
 
   const formatDuration = (ms: number) => {
     const seconds = Math.floor(ms / 1000)
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,14 +148,14 @@ export default function VideosPage() {
     if (!file) return
 
     // Check file type
-    if (!file.type.startsWith("video/")) {
-      setUploadError("Please select a video file (MP4 or WebM)")
+    if (!file.type.startsWith('video/')) {
+      setUploadError('Please select a video file (MP4 or WebM)')
       return
     }
 
     // Check file size (100MB max)
     if (file.size > 100 * 1024 * 1024) {
-      setUploadError("File size must be less than 100MB")
+      setUploadError('File size must be less than 100MB')
       return
     }
 
@@ -164,14 +164,14 @@ export default function VideosPage() {
 
     // Auto-fill title if empty
     if (!uploadTitle) {
-      const name = file.name.replace(/\.[^/.]+$/, "")
+      const name = file.name.replace(/\.[^/.]+$/, '')
       setUploadTitle(name)
     }
   }
 
   const handleUpload = async () => {
     if (!uploadFile || !uploadTitle.trim()) {
-      setUploadError("Please provide a title and select a file")
+      setUploadError('Please provide a title and select a file')
       return
     }
 
@@ -186,14 +186,14 @@ export default function VideosPage() {
       const duration = await getVideoDuration(uploadFile)
 
       // Generate unique file path
-      const ext = uploadFile.name.split(".").pop()
+      const ext = uploadFile.name.split('.').pop()
       const fileName = `${projectId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from("videos")
+        .from('videos')
         .upload(fileName, uploadFile, {
-          cacheControl: "3600",
+          cacheControl: '3600',
           upsert: false,
         })
 
@@ -206,7 +206,7 @@ export default function VideosPage() {
       }
 
       // Create video record
-      const { error: insertError } = await supabase.from("videos").insert({
+      const { error: insertError } = await supabase.from('videos').insert({
         project_id: projectId,
         title: uploadTitle.trim(),
         storage_path: fileName,
@@ -217,20 +217,20 @@ export default function VideosPage() {
 
       if (insertError) {
         // Clean up uploaded file
-        await supabase.storage.from("videos").remove([fileName])
+        await supabase.storage.from('videos').remove([fileName])
         setUploadError(insertError.message)
         setIsUploading(false)
         return
       }
 
-      toast.success("Video uploaded successfully")
+      toast.success('Video uploaded successfully')
       setIsUploadOpen(false)
-      setUploadTitle("")
+      setUploadTitle('')
       setUploadFile(null)
       setUploadProgress(0)
       loadVideos()
     } catch (err) {
-      setUploadError("Failed to upload video")
+      setUploadError('Failed to upload video')
     } finally {
       setIsUploading(false)
     }
@@ -238,8 +238,8 @@ export default function VideosPage() {
 
   const getVideoDuration = (file: File): Promise<number> => {
     return new Promise((resolve) => {
-      const video = document.createElement("video")
-      video.preload = "metadata"
+      const video = document.createElement('video')
+      video.preload = 'metadata'
       video.onloadedmetadata = () => {
         URL.revokeObjectURL(video.src)
         resolve(Math.round(video.duration * 1000))
@@ -260,20 +260,20 @@ export default function VideosPage() {
       const supabase = createClient()
 
       const { error } = await supabase
-        .from("videos")
+        .from('videos')
         .update({ title: editTitle.trim() })
-        .eq("id", editVideo.id)
+        .eq('id', editVideo.id)
 
       if (error) {
         toast.error(error.message)
         return
       }
 
-      toast.success("Video updated")
+      toast.success('Video updated')
       setEditVideo(null)
       loadVideos()
     } catch (err) {
-      toast.error("Failed to update video")
+      toast.error('Failed to update video')
     } finally {
       setIsSaving(false)
     }
@@ -289,25 +289,25 @@ export default function VideosPage() {
 
       // Delete from storage first
       if (deleteVideo.storage_path) {
-        await supabase.storage.from("videos").remove([deleteVideo.storage_path])
+        await supabase.storage.from('videos').remove([deleteVideo.storage_path])
       }
 
       // Delete video record
       const { error } = await supabase
-        .from("videos")
+        .from('videos')
         .delete()
-        .eq("id", deleteVideo.id)
+        .eq('id', deleteVideo.id)
 
       if (error) {
         toast.error(error.message)
         return
       }
 
-      toast.success("Video deleted")
+      toast.success('Video deleted')
       setDeleteVideo(null)
       loadVideos()
     } catch (err) {
-      toast.error("Failed to delete video")
+      toast.error('Failed to delete video')
     } finally {
       setIsDeleting(false)
     }
@@ -334,9 +334,7 @@ export default function VideosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Videos</h1>
-          <p className="text-muted-foreground">
-            Manage videos for your widget
-          </p>
+          <p className="text-muted-foreground">Manage videos for your widget</p>
         </div>
         {canEdit && (
           <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
@@ -542,14 +540,17 @@ export default function VideosPage() {
             >
               Cancel
             </Button>
-            <Button onClick={handleEdit} disabled={!editTitle.trim() || isSaving}>
+            <Button
+              onClick={handleEdit}
+              disabled={!editTitle.trim() || isSaving}
+            >
               {isSaving ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
                   Saving...
                 </>
               ) : (
-                "Save"
+                'Save'
               )}
             </Button>
           </DialogFooter>
@@ -571,7 +572,9 @@ export default function VideosPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
@@ -583,7 +586,7 @@ export default function VideosPage() {
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

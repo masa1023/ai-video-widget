@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -15,21 +15,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, Plus, X } from "lucide-react"
-import { toast } from "sonner"
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { AlertCircle, Plus, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function NewProjectPage() {
   const router = useRouter()
-  const [name, setName] = useState("")
-  const [origins, setOrigins] = useState<string[]>([""])
+  const [name, setName] = useState('')
+  const [origins, setOrigins] = useState<string[]>([''])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const addOrigin = () => {
-    setOrigins([...origins, ""])
+    setOrigins([...origins, ''])
   }
 
   const removeOrigin = (index: number) => {
@@ -47,7 +47,7 @@ export default function NewProjectPage() {
     setError(null)
 
     if (!name.trim()) {
-      setError("Project name is required")
+      setError('Project name is required')
       return
     }
 
@@ -75,26 +75,26 @@ export default function NewProjectPage() {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        setError("You must be logged in")
+        setError('You must be logged in')
         setIsLoading(false)
         return
       }
 
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("id", user.id)
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
         .single()
 
       if (!profile) {
-        setError("Profile not found")
+        setError('Profile not found')
         setIsLoading(false)
         return
       }
 
       // Create project
       const { data: project, error: createError } = await supabase
-        .from("projects")
+        .from('projects')
         .insert({
           organization_id: profile.organization_id,
           name: name.trim(),
@@ -109,11 +109,11 @@ export default function NewProjectPage() {
         return
       }
 
-      toast.success("Project created successfully")
+      toast.success('Project created successfully')
       router.push(`/projects/${project.id}`)
       router.refresh()
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError('An unexpected error occurred')
       setIsLoading(false)
     }
   }
@@ -212,7 +212,7 @@ export default function NewProjectPage() {
                   Creating...
                 </>
               ) : (
-                "Create Project"
+                'Create Project'
               )}
             </Button>
           </CardFooter>

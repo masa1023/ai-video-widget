@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Copy, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
+import { useState } from 'react'
+import { Copy, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 interface EmbedCodeCopyProps {
   code: string
@@ -16,10 +16,10 @@ export function EmbedCodeCopy({ code }: EmbedCodeCopyProps) {
     try {
       await navigator.clipboard.writeText(code)
       setCopied(true)
-      toast.success("Copied to clipboard")
+      toast.success('Copied to clipboard')
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error("Failed to copy")
+      toast.error('Failed to copy')
     }
   }
 

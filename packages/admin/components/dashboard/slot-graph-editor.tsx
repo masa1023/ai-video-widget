@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState, useRef, useCallback, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +30,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Spinner } from "@/components/ui/spinner"
+} from '@/components/ui/alert-dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Plus,
   Layers,
@@ -46,10 +46,10 @@ import {
   Pencil,
   Star,
   MousePointer,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-type ButtonType = "cta" | "detail" | "transition"
+type ButtonType = 'cta' | 'detail' | 'transition'
 
 interface VideoType {
   id: string
@@ -114,16 +114,16 @@ export function SlotGraphEditor({
 
   // Create slot dialog
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [createName, setCreateName] = useState("")
-  const [createVideoId, setCreateVideoId] = useState("")
+  const [createName, setCreateName] = useState('')
+  const [createVideoId, setCreateVideoId] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
   // Edit slot dialog
   const [editSlot, setEditSlot] = useState<SlotType | null>(null)
-  const [editName, setEditName] = useState("")
-  const [editButtonType, setEditButtonType] = useState<ButtonType>("cta")
-  const [editButtonLabel, setEditButtonLabel] = useState("")
-  const [editButtonUrl, setEditButtonUrl] = useState("")
+  const [editName, setEditName] = useState('')
+  const [editButtonType, setEditButtonType] = useState<ButtonType>('cta')
+  const [editButtonLabel, setEditButtonLabel] = useState('')
+  const [editButtonUrl, setEditButtonUrl] = useState('')
   const [editIsEntry, setEditIsEntry] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -159,8 +159,8 @@ export function SlotGraphEditor({
 
     if (result) {
       setIsCreateOpen(false)
-      setCreateName("")
-      setCreateVideoId("")
+      setCreateName('')
+      setCreateVideoId('')
     }
   }
 
@@ -172,8 +172,9 @@ export function SlotGraphEditor({
     const success = await onSlotUpdate(editSlot.id, {
       name: editName.trim(),
       button_type: editButtonType,
-      button_label: editButtonLabel.trim() || "Click Here",
-      button_url: editButtonType === "cta" ? editButtonUrl.trim() || null : null,
+      button_label: editButtonLabel.trim() || 'Click Here',
+      button_url:
+        editButtonType === 'cta' ? editButtonUrl.trim() || null : null,
       is_entry_point: editIsEntry,
     })
 
@@ -241,45 +242,53 @@ export function SlotGraphEditor({
 
   useEffect(() => {
     if (dragging) {
-      window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("mouseup", handleMouseUp)
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
       return () => {
-        window.removeEventListener("mousemove", handleMouseMove)
-        window.removeEventListener("mouseup", handleMouseUp)
+        window.removeEventListener('mousemove', handleMouseMove)
+        window.removeEventListener('mouseup', handleMouseUp)
       }
     }
   }, [dragging, handleMouseMove, handleMouseUp])
 
   const getVideoTitle = (videoId: string) => {
     const video = videos.find((v) => v.id === videoId)
-    return video?.title || "Unknown Video"
+    return video?.title || 'Unknown Video'
   }
 
   const getButtonIcon = (type: ButtonType) => {
     switch (type) {
-      case "cta":
+      case 'cta':
         return <ExternalLink className="h-3 w-3" />
-      case "detail":
+      case 'detail':
         return <MousePointer className="h-3 w-3" />
-      case "transition":
+      case 'transition':
         return <ArrowRight className="h-3 w-3" />
     }
   }
 
   // Calculate SVG lines for transitions
-  const transitionLines = transitions.map((t) => {
-    const fromSlot = slots.find((s) => s.id === t.from_slot_id)
-    const toSlot = slots.find((s) => s.id === t.to_slot_id)
-    if (!fromSlot || !toSlot) return null
+  const transitionLines = transitions
+    .map((t) => {
+      const fromSlot = slots.find((s) => s.id === t.from_slot_id)
+      const toSlot = slots.find((s) => s.id === t.to_slot_id)
+      if (!fromSlot || !toSlot) return null
 
-    return {
-      id: t.id,
-      x1: fromSlot.position_x + 120,
-      y1: fromSlot.position_y + 50,
-      x2: toSlot.position_x,
-      y2: toSlot.position_y + 50,
-    }
-  }).filter(Boolean) as { id: string; x1: number; y1: number; x2: number; y2: number }[]
+      return {
+        id: t.id,
+        x1: fromSlot.position_x + 120,
+        y1: fromSlot.position_y + 50,
+        x2: toSlot.position_x,
+        y2: toSlot.position_y + 50,
+      }
+    })
+    .filter(Boolean) as {
+    id: string
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+  }[]
 
   return (
     <div className="flex flex-col h-full">
@@ -294,16 +303,16 @@ export function SlotGraphEditor({
           {connectingFrom && (
             <Badge variant="secondary" className="mr-2">
               Click a slot to connect
-              <button
-                className="ml-2"
-                onClick={() => setConnectingFrom(null)}
-              >
+              <button className="ml-2" onClick={() => setConnectingFrom(null)}>
                 Cancel
               </button>
             </Badge>
           )}
           {canEdit && (
-            <Button onClick={() => setIsCreateOpen(true)} disabled={videos.length === 0}>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              disabled={videos.length === 0}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Slot
             </Button>
@@ -350,7 +359,7 @@ export function SlotGraphEditor({
           {/* Connection lines */}
           <svg
             className="absolute inset-0 pointer-events-none"
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: '100%', height: '100%' }}
           >
             <defs>
               <marker
@@ -398,8 +407,8 @@ export function SlotGraphEditor({
             <div
               key={slot.id}
               className={cn(
-                "absolute w-60 cursor-move select-none",
-                dragging?.id === slot.id && "opacity-75"
+                'absolute w-60 cursor-move select-none',
+                dragging?.id === slot.id && 'opacity-75'
               )}
               style={{
                 left: slot.position_x,
@@ -410,11 +419,13 @@ export function SlotGraphEditor({
             >
               <Card
                 className={cn(
-                  "border-2 transition-colors",
+                  'border-2 transition-colors',
                   slot.is_entry_point
-                    ? "border-primary"
-                    : "border-border hover:border-primary/50",
-                  connectingFrom && connectingFrom !== slot.id && "ring-2 ring-primary/30"
+                    ? 'border-primary'
+                    : 'border-border hover:border-primary/50',
+                  connectingFrom &&
+                    connectingFrom !== slot.id &&
+                    'ring-2 ring-primary/30'
                 )}
               >
                 <CardHeader className="pb-2">
@@ -448,7 +459,7 @@ export function SlotGraphEditor({
                             setEditName(slot.name)
                             setEditButtonType(slot.button_type)
                             setEditButtonLabel(slot.button_label)
-                            setEditButtonUrl(slot.button_url || "")
+                            setEditButtonUrl(slot.button_url || '')
                             setEditIsEntry(slot.is_entry_point)
                           }}
                         >
@@ -543,7 +554,7 @@ export function SlotGraphEditor({
                   Creating...
                 </>
               ) : (
-                "Create"
+                'Create'
               )}
             </Button>
           </DialogFooter>
@@ -614,7 +625,7 @@ export function SlotGraphEditor({
                 disabled={isSaving}
               />
             </div>
-            {editButtonType === "cta" && (
+            {editButtonType === 'cta' && (
               <div className="space-y-2">
                 <Label htmlFor="edit-url">Button URL</Label>
                 <Input
@@ -646,7 +657,7 @@ export function SlotGraphEditor({
                   Saving...
                 </>
               ) : (
-                "Save"
+                'Save'
               )}
             </Button>
           </DialogFooter>
@@ -667,7 +678,9 @@ export function SlotGraphEditor({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-transparent">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteSlot}
               disabled={isDeleting}
@@ -679,7 +692,7 @@ export function SlotGraphEditor({
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

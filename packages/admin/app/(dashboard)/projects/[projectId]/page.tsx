@@ -1,6 +1,6 @@
-import { redirect, notFound } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import Link from "next/link"
+import { redirect, notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import {
   Video,
   Layers,
@@ -11,16 +11,16 @@ import {
   MousePointer,
   Copy,
   Check,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { EmbedCodeCopy } from "@/components/dashboard/embed-code-copy"
+} from '@/components/ui/card'
+import { EmbedCodeCopy } from '@/components/dashboard/embed-code-copy'
 
 export default async function ProjectOverviewPage({
   params,
@@ -35,14 +35,14 @@ export default async function ProjectOverviewPage({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Get project details
   const { data: project, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", projectId)
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
     .single()
 
   if (error || !project) {
@@ -52,17 +52,17 @@ export default async function ProjectOverviewPage({
   // Get counts
   const [videosResult, slotsResult, conversionsResult] = await Promise.all([
     supabase
-      .from("videos")
-      .select("id", { count: "exact", head: true })
-      .eq("project_id", projectId),
+      .from('videos')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId),
     supabase
-      .from("slots")
-      .select("id", { count: "exact", head: true })
-      .eq("project_id", projectId),
+      .from('slots')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId),
     supabase
-      .from("conversion_rules")
-      .select("id", { count: "exact", head: true })
-      .eq("project_id", projectId),
+      .from('conversion_rules')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId),
   ])
 
   const videoCount = videosResult.count || 0
@@ -75,33 +75,33 @@ export default async function ProjectOverviewPage({
 
   // Get sessions for this project in the last 30 days
   const { data: sessions } = await supabase
-    .from("sessions")
-    .select("id")
-    .eq("project_id", projectId)
-    .gte("created_at", thirtyDaysAgo.toISOString())
+    .from('sessions')
+    .select('id')
+    .eq('project_id', projectId)
+    .gte('created_at', thirtyDaysAgo.toISOString())
 
   const sessionIds = sessions?.map((s) => s.id) || []
 
   // Get widget opens
   const { count: widgetOpens } = await supabase
-    .from("event_widget_opens")
-    .select("id", { count: "exact", head: true })
-    .in("session_id", sessionIds.length > 0 ? sessionIds : ["none"])
-    .gte("created_at", thirtyDaysAgo.toISOString())
+    .from('event_widget_opens')
+    .select('id', { count: 'exact', head: true })
+    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
+    .gte('created_at', thirtyDaysAgo.toISOString())
 
   // Get video starts
   const { count: videoStarts } = await supabase
-    .from("event_video_starts")
-    .select("id", { count: "exact", head: true })
-    .in("session_id", sessionIds.length > 0 ? sessionIds : ["none"])
-    .gte("created_at", thirtyDaysAgo.toISOString())
+    .from('event_video_starts')
+    .select('id', { count: 'exact', head: true })
+    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
+    .gte('created_at', thirtyDaysAgo.toISOString())
 
   // Get clicks
   const { count: clicks } = await supabase
-    .from("event_clicks")
-    .select("id", { count: "exact", head: true })
-    .in("session_id", sessionIds.length > 0 ? sessionIds : ["none"])
-    .gte("created_at", thirtyDaysAgo.toISOString())
+    .from('event_clicks')
+    .select('id', { count: 'exact', head: true })
+    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
+    .gte('created_at', thirtyDaysAgo.toISOString())
 
   // Generate embed script
   const embedScript = `<script src="https://widget.bonsaivideo.com/embed.js" data-project-id="${projectId}" async></script>`
@@ -111,7 +111,9 @@ export default async function ProjectOverviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
-          <p className="text-muted-foreground">Project overview and quick stats</p>
+          <p className="text-muted-foreground">
+            Project overview and quick stats
+          </p>
         </div>
         <Button asChild variant="outline" className="bg-transparent">
           <Link href={`/projects/${projectId}/settings`}>Settings</Link>
@@ -137,7 +139,9 @@ export default async function ProjectOverviewPage({
         <div className="grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Widget Opens</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Widget Opens
+              </CardTitle>
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -159,7 +163,9 @@ export default async function ProjectOverviewPage({
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Button Clicks</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Button Clicks
+              </CardTitle>
               <MousePointer className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

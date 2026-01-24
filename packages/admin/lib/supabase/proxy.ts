@@ -1,6 +1,6 @@
-import { createServerClient } from "@supabase/ssr"
-import { NextResponse, type NextRequest } from "next/server"
-import type { Database } from "@/lib/supabase/database.types"
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+import type { Database } from '@/lib/supabase/database.types'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -41,28 +41,28 @@ export async function updateSession(request: NextRequest) {
   // Protected routes check
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/signup") &&
-    !request.nextUrl.pathname.startsWith("/reset-password") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api/widget") &&
-    request.nextUrl.pathname !== "/"
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/signup') &&
+    !request.nextUrl.pathname.startsWith('/reset-password') &&
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/api/widget') &&
+    request.nextUrl.pathname !== '/'
   ) {
     // no user, redirect to login page
     const url = request.nextUrl.clone()
-    url.pathname = "/login"
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
   // If user is logged in and trying to access auth pages, redirect to dashboard
   if (
     user &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/signup") ||
-      request.nextUrl.pathname === "/")
+    (request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/signup') ||
+      request.nextUrl.pathname === '/')
   ) {
     const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 

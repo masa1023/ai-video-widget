@@ -1,5 +1,5 @@
-import { createClient } from "@supabase/supabase-js"
-import { NextRequest, NextResponse } from "next/server"
+import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Use service role for widget API to bypass RLS
 const supabaseAdmin = createClient(
@@ -12,12 +12,12 @@ export async function GET(
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   const { projectId } = await params
-  const origin = request.headers.get("origin") || ""
+  const origin = request.headers.get('origin') || ''
 
   try {
     // Get project and verify it exists and is active
     const { data: project, error: projectError } = await supabaseAdmin
-      .from("projects")
+      .from('projects')
       .select(
         `
         id,
@@ -28,28 +28,25 @@ export async function GET(
         )
       `
       )
-      .eq("id", projectId)
+      .eq('id', projectId)
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: "Project not found" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
     // Check organization is active
     const org = project.organizations as { status: string }
-    if (org.status !== "active") {
+    if (org.status !== 'active') {
       return NextResponse.json(
-        { error: "Project not available" },
+        { error: 'Project not available' },
         { status: 403 }
       )
     }
 
     // Check origin is allowed (skip in development)
     if (
-      process.env.NODE_ENV === "production" &&
+      process.env.NODE_ENV === 'production' &&
       project.allowed_origins?.length > 0
     ) {
       const originAllowed = project.allowed_origins.some((allowed: string) => {
@@ -64,7 +61,7 @@ export async function GET(
 
       if (!originAllowed) {
         return NextResponse.json(
-          { error: "Origin not allowed" },
+          { error: 'Origin not allowed' },
           { status: 403 }
         )
       }
@@ -72,7 +69,7 @@ export async function GET(
 
     // Get slots with their video info
     const { data: slots, error: slotsError } = await supabaseAdmin
-      .from("slots")
+      .from('slots')
       .select(
         `
         id,
@@ -89,11 +86,11 @@ export async function GET(
         )
       `
       )
-      .eq("project_id", projectId)
+      .eq('project_id', projectId)
 
     if (slotsError) {
       return NextResponse.json(
-        { error: "Failed to load slots" },
+        { error: 'Failed to load slots' },
         { status: 500 }
       )
     }
@@ -104,9 +101,9 @@ export async function GET(
 
     if (slotIds.length > 0) {
       const { data: transitionsData } = await supabaseAdmin
-        .from("slot_transitions")
-        .select("from_slot_id, to_slot_id")
-        .in("from_slot_id", slotIds)
+        .from('slot_transitions')
+        .select('from_slot_id, to_slot_id')
+        .in('from_slot_id', slotIds)
 
       transitions = transitionsData || []
     }
@@ -124,7 +121,7 @@ export async function GET(
         let videoUrl = null
         if (video?.storage_path) {
           const { data: signedData } = await supabaseAdmin.storage
-            .from("videos")
+            .from('videos')
             .createSignedUrl(video.storage_path, 3600) // 1 hour
 
           videoUrl = signedData?.signedUrl || null
@@ -164,29 +161,29 @@ export async function GET(
 
     return NextResponse.json(config, {
       headers: {
-        "Access-Control-Allow-Origin": origin || "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Cache-Control": "public, max-age=60",
+        'Access-Control-Allow-Origin': origin || '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Cache-Control': 'public, max-age=60',
       },
     })
   } catch (error) {
-    console.error("Widget config error:", error)
+    console.error('Widget config error:', error)
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 export async function OPTIONS(request: NextRequest) {
-  const origin = request.headers.get("origin") || "*"
+  const origin = request.headers.get('origin') || '*'
 
   return new NextResponse(null, {
     status: 200,
     headers: {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     },
   })
 }

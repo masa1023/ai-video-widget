@@ -1,19 +1,19 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -21,14 +21,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,16 +47,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { toast } from "sonner"
-import { Loader2, UserPlus, Users, Shield, Trash2, Crown } from "lucide-react"
-import { redirect } from "next/navigation"
+} from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
+import { Loader2, UserPlus, Users, Shield, Trash2, Crown } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 interface Member {
   id: string
   display_name: string | null
   email: string
-  role: "owner" | "admin" | "viewer"
+  role: 'owner' | 'admin' | 'viewer'
   created_at: string
 }
 
@@ -65,8 +65,8 @@ export default function MembersPage() {
   const [currentUser, setCurrentUser] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState("")
-  const [inviteRole, setInviteRole] = useState<"admin" | "viewer">("viewer")
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<'admin' | 'viewer'>('viewer')
   const [inviting, setInviting] = useState(false)
   const [deleteMember, setDeleteMember] = useState<Member | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -78,44 +78,46 @@ export default function MembersPage() {
 
   async function fetchMembers() {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Get current user's profile
       const { data: currentProfile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single()
 
       if (profileError) throw profileError
 
       // Only owners can access this page
-      if (currentProfile.role !== "owner") {
-        redirect("/dashboard")
+      if (currentProfile.role !== 'owner') {
+        redirect('/dashboard')
       }
 
-      setCurrentUser({ ...currentProfile, email: user.email || "" })
+      setCurrentUser({ ...currentProfile, email: user.email || '' })
 
       // Get all members in the organization
       const { data: membersData, error: membersError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("organization_id", currentProfile.organization_id)
-        .order("created_at", { ascending: true })
+        .from('profiles')
+        .select('*')
+        .eq('organization_id', currentProfile.organization_id)
+        .order('created_at', { ascending: true })
 
       if (membersError) throw membersError
 
       // Get emails for all members
       const membersWithEmails = membersData.map((member) => ({
         ...member,
-        email: member.id === user.id ? user.email || "" : "---",
+        email: member.id === user.id ? user.email || '' : '---',
       }))
 
       setMembers(membersWithEmails)
     } catch (error) {
-      console.error("Error fetching members:", error)
-      toast.error("Failed to load members")
+      console.error('Error fetching members:', error)
+      toast.error('Failed to load members')
     } finally {
       setLoading(false)
     }
@@ -131,39 +133,42 @@ export default function MembersPage() {
       // 1. Create an invitation record
       // 2. Send an email with a signup link containing the org_id and role
       // For now, we'll show a toast with instructions
-      
+
       toast.success(
         `Invitation feature: In production, an email would be sent to ${inviteEmail} with a signup link that includes the organization ID and ${inviteRole} role.`
       )
       setInviteDialogOpen(false)
-      setInviteEmail("")
-      setInviteRole("viewer")
+      setInviteEmail('')
+      setInviteRole('viewer')
     } catch (error) {
-      console.error("Error inviting member:", error)
-      toast.error("Failed to send invitation")
+      console.error('Error inviting member:', error)
+      toast.error('Failed to send invitation')
     } finally {
       setInviting(false)
     }
   }
 
-  async function handleUpdateRole(memberId: string, newRole: "admin" | "viewer") {
+  async function handleUpdateRole(
+    memberId: string,
+    newRole: 'admin' | 'viewer'
+  ) {
     if (!currentUser || memberId === currentUser.id) return
 
     try {
       const { error } = await supabase
-        .from("profiles")
+        .from('profiles')
         .update({ role: newRole })
-        .eq("id", memberId)
+        .eq('id', memberId)
 
       if (error) throw error
 
-      setMembers(members.map((m) =>
-        m.id === memberId ? { ...m, role: newRole } : m
-      ))
-      toast.success("Role updated successfully")
+      setMembers(
+        members.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
+      )
+      toast.success('Role updated successfully')
     } catch (error) {
-      console.error("Error updating role:", error)
-      toast.error("Failed to update role")
+      console.error('Error updating role:', error)
+      toast.error('Failed to update role')
     }
   }
 
@@ -175,17 +180,17 @@ export default function MembersPage() {
       // Remove member from organization by deleting their profile
       // This will cascade delete their auth user due to our trigger
       const { error } = await supabase
-        .from("profiles")
+        .from('profiles')
         .delete()
-        .eq("id", deleteMember.id)
+        .eq('id', deleteMember.id)
 
       if (error) throw error
 
       setMembers(members.filter((m) => m.id !== deleteMember.id))
-      toast.success("Member removed successfully")
+      toast.success('Member removed successfully')
     } catch (error) {
-      console.error("Error removing member:", error)
-      toast.error("Failed to remove member")
+      console.error('Error removing member:', error)
+      toast.error('Failed to remove member')
     } finally {
       setDeleting(false)
       setDeleteMember(null)
@@ -194,9 +199,9 @@ export default function MembersPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case "owner":
+      case 'owner':
         return <Crown className="h-4 w-4 text-yellow-500" />
-      case "admin":
+      case 'admin':
         return <Shield className="h-4 w-4 text-blue-500" />
       default:
         return <Users className="h-4 w-4 text-muted-foreground" />
@@ -211,10 +216,12 @@ export default function MembersPage() {
     )
   }
 
-  if (!currentUser || currentUser.role !== "owner") {
+  if (!currentUser || currentUser.role !== 'owner') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">You do not have permission to access this page.</p>
+        <p className="text-muted-foreground">
+          You do not have permission to access this page.
+        </p>
       </div>
     )
   }
@@ -224,7 +231,9 @@ export default function MembersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Team Members</h1>
-          <p className="text-muted-foreground">Manage your organization members and their roles</p>
+          <p className="text-muted-foreground">
+            Manage your organization members and their roles
+          </p>
         </div>
         <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
           <DialogTrigger asChild>
@@ -255,7 +264,10 @@ export default function MembersPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select value={inviteRole} onValueChange={(v: "admin" | "viewer") => setInviteRole(v)}>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v: 'admin' | 'viewer') => setInviteRole(v)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -263,7 +275,9 @@ export default function MembersPage() {
                       <SelectItem value="admin">
                         <div className="flex items-center gap-2">
                           <Shield className="h-4 w-4 text-blue-500" />
-                          <span>Admin - Can edit videos, slots, and conversions</span>
+                          <span>
+                            Admin - Can edit videos, slots, and conversions
+                          </span>
                         </div>
                       </SelectItem>
                       <SelectItem value="viewer">
@@ -277,11 +291,17 @@ export default function MembersPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setInviteDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={inviting}>
-                  {inviting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {inviting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Send Invitation
                 </Button>
               </DialogFooter>
@@ -294,7 +314,8 @@ export default function MembersPage() {
         <CardHeader>
           <CardTitle>Organization Members</CardTitle>
           <CardDescription>
-            {members.length} member{members.length !== 1 ? "s" : ""} in your organization
+            {members.length} member{members.length !== 1 ? 's' : ''} in your
+            organization
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -313,11 +334,17 @@ export default function MembersPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        {member.display_name?.[0]?.toUpperCase() || member.email[0]?.toUpperCase() || "?"}
+                        {member.display_name?.[0]?.toUpperCase() ||
+                          member.email[0]?.toUpperCase() ||
+                          '?'}
                       </div>
                       <div>
-                        <p className="font-medium">{member.display_name || "No name"}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="font-medium">
+                          {member.display_name || 'No name'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.email}
+                        </p>
                       </div>
                       {member.id === currentUser.id && (
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -336,30 +363,33 @@ export default function MembersPage() {
                     {new Date(member.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    {member.id !== currentUser.id && member.role !== "owner" && (
-                      <div className="flex items-center justify-end gap-2">
-                        <Select
-                          value={member.role}
-                          onValueChange={(v: "admin" | "viewer") => handleUpdateRole(member.id, v)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteMember(member)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                    {member.id !== currentUser.id &&
+                      member.role !== 'owner' && (
+                        <div className="flex items-center justify-end gap-2">
+                          <Select
+                            value={member.role}
+                            onValueChange={(v: 'admin' | 'viewer') =>
+                              handleUpdateRole(member.id, v)
+                            }
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="viewer">Viewer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteMember(member)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -368,13 +398,17 @@ export default function MembersPage() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!deleteMember} onOpenChange={() => setDeleteMember(null)}>
+      <AlertDialog
+        open={!!deleteMember}
+        onOpenChange={() => setDeleteMember(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {deleteMember?.display_name || deleteMember?.email} from your organization?
-              This action cannot be undone.
+              Are you sure you want to remove{' '}
+              {deleteMember?.display_name || deleteMember?.email} from your
+              organization? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

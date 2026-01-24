@@ -1,20 +1,27 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState } from "react"
-import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
+import { useState } from 'react'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
 
 export default function ResetPasswordPage() {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -26,10 +33,13 @@ export default function ResetPasswordPage() {
 
     try {
       const supabase = createClient()
-      
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
-      })
+
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+        }
+      )
 
       if (resetError) {
         setError(resetError.message)
@@ -39,7 +49,7 @@ export default function ResetPasswordPage() {
 
       setIsSuccess(true)
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }
@@ -51,7 +61,9 @@ export default function ResetPasswordPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">Check your email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">
+            Check your email
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {"We've sent a password reset link to "}
             <span className="font-medium text-foreground">{email}</span>
@@ -87,7 +99,9 @@ export default function ResetPasswordPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-foreground">Reset password</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">
+          Reset password
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
           {"Enter your email and we'll send you a reset link"}
         </CardDescription>
@@ -122,7 +136,7 @@ export default function ResetPasswordPage() {
                 Sending reset link...
               </>
             ) : (
-              "Send reset link"
+              'Send reset link'
             )}
           </Button>
           <Link

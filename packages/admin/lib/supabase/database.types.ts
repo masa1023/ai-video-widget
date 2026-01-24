@@ -6,10 +6,10 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type OrganizationStatus = "active" | "inactive" | "suspended"
-export type MemberRole = "owner" | "admin" | "viewer"
-export type ButtonType = "cta" | "detail" | "transition"
-export type ConversionType = "click" | "video_view"
+export type OrganizationStatus = 'active' | 'inactive' | 'suspended'
+export type MemberRole = 'owner' | 'admin' | 'viewer'
+export type ButtonType = 'cta' | 'detail' | 'transition'
+export type ConversionType = 'click' | 'video_view'
 
 export interface Database {
   public: {
@@ -373,16 +373,19 @@ export interface Database {
 }
 
 // Helper type for table names
-type PublicTableNames = keyof Database["public"]["Tables"]
+type PublicTableNames = keyof Database['public']['Tables']
 
 // Table row types helper - get the Row type for a table
-export type Tables<T extends PublicTableNames> = Database["public"]["Tables"][T]["Row"]
+export type Tables<T extends PublicTableNames> =
+  Database['public']['Tables'][T]['Row']
 
 // Table insert types helper - get the Insert type for a table
-export type Inserts<T extends PublicTableNames> = Database["public"]["Tables"][T]["Insert"]
+export type Inserts<T extends PublicTableNames> =
+  Database['public']['Tables'][T]['Insert']
 
 // Table update types helper - get the Update type for a table
-export type Updates<T extends PublicTableNames> = Database["public"]["Tables"][T]["Update"]
+export type Updates<T extends PublicTableNames> =
+  Database['public']['Tables'][T]['Update']
 
 // Re-export for convenience
 export type { PublicTableNames }

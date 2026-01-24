@@ -1,6 +1,6 @@
 'use client'
 
-import React from "react"
+import React from 'react'
 
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 

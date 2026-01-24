@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle, Plus, X, Trash2 } from "lucide-react"
-import { toast } from "sonner"
+} from '@/components/ui/alert-dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
+import { AlertCircle, Plus, X, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function ProjectSettingsPage() {
   const router = useRouter()
@@ -42,8 +42,8 @@ export default function ProjectSettingsPage() {
     allowed_origins: string[]
   } | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
-  const [name, setName] = useState("")
-  const [origins, setOrigins] = useState<string[]>([""])
+  const [name, setName] = useState('')
+  const [origins, setOrigins] = useState<string[]>([''])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -60,28 +60,28 @@ export default function ProjectSettingsPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     // Get user role
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
       .single()
 
     setUserRole(profile?.role || null)
 
     // Get project
     const { data: projectData, error: projectError } = await supabase
-      .from("projects")
-      .select("*")
-      .eq("id", projectId)
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
       .single()
 
     if (projectError || !projectData) {
-      router.push("/dashboard")
+      router.push('/dashboard')
       return
     }
 
@@ -90,13 +90,13 @@ export default function ProjectSettingsPage() {
     setOrigins(
       projectData.allowed_origins?.length > 0
         ? projectData.allowed_origins
-        : [""]
+        : ['']
     )
     setIsLoading(false)
   }
 
   const addOrigin = () => {
-    setOrigins([...origins, ""])
+    setOrigins([...origins, ''])
   }
 
   const removeOrigin = (index: number) => {
@@ -113,7 +113,7 @@ export default function ProjectSettingsPage() {
     setError(null)
 
     if (!name.trim()) {
-      setError("Project name is required")
+      setError('Project name is required')
       return
     }
 
@@ -137,12 +137,12 @@ export default function ProjectSettingsPage() {
       const supabase = createClient()
 
       const { error: updateError } = await supabase
-        .from("projects")
+        .from('projects')
         .update({
           name: name.trim(),
           allowed_origins: validOrigins,
         })
-        .eq("id", projectId)
+        .eq('id', projectId)
 
       if (updateError) {
         setError(updateError.message)
@@ -150,10 +150,10 @@ export default function ProjectSettingsPage() {
         return
       }
 
-      toast.success("Project settings saved")
+      toast.success('Project settings saved')
       router.refresh()
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError('An unexpected error occurred')
     } finally {
       setIsSaving(false)
     }
@@ -166,9 +166,9 @@ export default function ProjectSettingsPage() {
       const supabase = createClient()
 
       const { error: deleteError } = await supabase
-        .from("projects")
+        .from('projects')
         .delete()
-        .eq("id", projectId)
+        .eq('id', projectId)
 
       if (deleteError) {
         toast.error(deleteError.message)
@@ -176,17 +176,17 @@ export default function ProjectSettingsPage() {
         return
       }
 
-      toast.success("Project deleted")
-      router.push("/dashboard")
+      toast.success('Project deleted')
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
-      toast.error("Failed to delete project")
+      toast.error('Failed to delete project')
       setIsDeleting(false)
     }
   }
 
-  const canEdit = userRole === "owner" || userRole === "admin"
-  const canDelete = userRole === "owner"
+  const canEdit = userRole === 'owner' || userRole === 'admin'
+  const canDelete = userRole === 'owner'
 
   if (isLoading) {
     return (
@@ -292,7 +292,7 @@ export default function ProjectSettingsPage() {
                   Saving...
                 </>
               ) : (
-                "Save Changes"
+                'Save Changes'
               )}
             </Button>
           </CardFooter>
@@ -325,7 +325,9 @@ export default function ProjectSettingsPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-transparent">Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="bg-transparent">
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -336,7 +338,7 @@ export default function ProjectSettingsPage() {
                         Deleting...
                       </>
                     ) : (
-                      "Delete Project"
+                      'Delete Project'
                     )}
                   </AlertDialogAction>
                 </AlertDialogFooter>

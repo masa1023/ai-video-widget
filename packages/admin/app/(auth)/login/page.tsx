@@ -1,23 +1,30 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, Eye, EyeOff } from "lucide-react"
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -29,11 +36,12 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
-      
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
       if (signInError) {
         setError(signInError.message)
@@ -42,44 +50,51 @@ export default function LoginPage() {
       }
 
       if (!data.user) {
-        setError("Login failed. Please try again.")
+        setError('Login failed. Please try again.')
         setIsLoading(false)
         return
       }
 
       // Check if user has a profile and organization
       const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("organization_id, organizations(status)")
-        .eq("id", data.user.id)
+        .from('profiles')
+        .select('organization_id, organizations(status)')
+        .eq('id', data.user.id)
         .single()
 
       if (profileError || !profile) {
-        setError("Account setup incomplete. Please contact support.")
+        setError('Account setup incomplete. Please contact support.')
         await supabase.auth.signOut()
         setIsLoading(false)
         return
       }
 
       // Check organization status
-      const orgStatus = (profile.organizations as { status: string } | null)?.status
-      if (orgStatus !== "active") {
-        if (orgStatus === "inactive") {
-          setError("Your organization is not yet activated. Please wait for activation.")
-        } else if (orgStatus === "suspended") {
-          setError("Your organization has been suspended. Please contact support.")
+      const orgStatus = (profile.organizations as { status: string } | null)
+        ?.status
+      if (orgStatus !== 'active') {
+        if (orgStatus === 'inactive') {
+          setError(
+            'Your organization is not yet activated. Please wait for activation.'
+          )
+        } else if (orgStatus === 'suspended') {
+          setError(
+            'Your organization has been suspended. Please contact support.'
+          )
         } else {
-          setError("Unable to access your organization. Please contact support.")
+          setError(
+            'Unable to access your organization. Please contact support.'
+          )
         }
         await supabase.auth.signOut()
         setIsLoading(false)
         return
       }
 
-      router.push("/dashboard")
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }
@@ -87,7 +102,9 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-foreground">Welcome back</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">
+          Welcome back
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
           Sign in to your account to continue
         </CardDescription>
@@ -126,7 +143,7 @@ export default function LoginPage() {
             <div className="relative">
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -140,9 +157,13 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 tabIndex={-1}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -155,7 +176,7 @@ export default function LoginPage() {
                 Signing in...
               </>
             ) : (
-              "Sign in"
+              'Sign in'
             )}
           </Button>
           <p className="text-center text-sm text-muted-foreground">

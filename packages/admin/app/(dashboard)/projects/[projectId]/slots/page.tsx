@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { SlotGraphEditor } from "@/components/dashboard/slot-graph-editor"
-import { Skeleton } from "@/components/ui/skeleton"
-import { toast } from "sonner"
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { SlotGraphEditor } from '@/components/dashboard/slot-graph-editor'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 
 interface VideoType {
   id: string
@@ -24,7 +24,7 @@ interface SlotType {
   video_id: string
   name: string
   is_entry_point: boolean
-  button_type: "cta" | "detail" | "transition"
+  button_type: 'cta' | 'detail' | 'transition'
   button_label: string
   button_url: string | null
   position_x: number
@@ -58,34 +58,34 @@ export default function SlotsPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     // Get user role
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
       .single()
 
     setUserRole(profile?.role || null)
 
     // Get videos
     const { data: videosData } = await supabase
-      .from("videos")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("title")
+      .from('videos')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('title')
 
     setVideos(videosData || [])
 
     // Get slots
     const { data: slotsData } = await supabase
-      .from("slots")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at")
+      .from('slots')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at')
 
     setSlots(slotsData || [])
 
@@ -93,9 +93,9 @@ export default function SlotsPage() {
     if (slotsData && slotsData.length > 0) {
       const slotIds = slotsData.map((s) => s.id)
       const { data: transitionsData } = await supabase
-        .from("slot_transitions")
-        .select("*")
-        .in("from_slot_id", slotIds)
+        .from('slot_transitions')
+        .select('*')
+        .in('from_slot_id', slotIds)
 
       setTransitions(transitionsData || [])
     }
@@ -107,20 +107,20 @@ export default function SlotsPage() {
     loadData()
   }, [loadData])
 
-  const canEdit = userRole === "owner" || userRole === "admin"
+  const canEdit = userRole === 'owner' || userRole === 'admin'
 
   const handleSlotCreate = async (slot: Partial<SlotType>) => {
     const supabase = createClient()
 
     const { data, error } = await supabase
-      .from("slots")
+      .from('slots')
       .insert({
         project_id: projectId,
         video_id: slot.video_id!,
         name: slot.name!,
         is_entry_point: slot.is_entry_point || false,
-        button_type: slot.button_type || "cta",
-        button_label: slot.button_label || "Click Here",
+        button_type: slot.button_type || 'cta',
+        button_label: slot.button_label || 'Click Here',
         button_url: slot.button_url || null,
         position_x: slot.position_x || 0,
         position_y: slot.position_y || 0,
@@ -134,7 +134,7 @@ export default function SlotsPage() {
     }
 
     setSlots([...slots, data])
-    toast.success("Slot created")
+    toast.success('Slot created')
     return data
   }
 
@@ -144,13 +144,13 @@ export default function SlotsPage() {
     // If setting as entry point, unset others
     if (updates.is_entry_point) {
       await supabase
-        .from("slots")
+        .from('slots')
         .update({ is_entry_point: false })
-        .eq("project_id", projectId)
-        .neq("id", id)
+        .eq('project_id', projectId)
+        .neq('id', id)
     }
 
-    const { error } = await supabase.from("slots").update(updates).eq("id", id)
+    const { error } = await supabase.from('slots').update(updates).eq('id', id)
 
     if (error) {
       toast.error(error.message)
@@ -176,10 +176,10 @@ export default function SlotsPage() {
     const supabase = createClient()
 
     // Delete transitions first
-    await supabase.from("slot_transitions").delete().eq("from_slot_id", id)
-    await supabase.from("slot_transitions").delete().eq("to_slot_id", id)
+    await supabase.from('slot_transitions').delete().eq('from_slot_id', id)
+    await supabase.from('slot_transitions').delete().eq('to_slot_id', id)
 
-    const { error } = await supabase.from("slots").delete().eq("id", id)
+    const { error } = await supabase.from('slots').delete().eq('id', id)
 
     if (error) {
       toast.error(error.message)
@@ -190,7 +190,7 @@ export default function SlotsPage() {
     setTransitions(
       transitions.filter((t) => t.from_slot_id !== id && t.to_slot_id !== id)
     )
-    toast.success("Slot deleted")
+    toast.success('Slot deleted')
     return true
   }
 
@@ -205,12 +205,12 @@ export default function SlotsPage() {
       (t) => t.from_slot_id === fromSlotId && t.to_slot_id === toSlotId
     )
     if (exists) {
-      toast.error("Transition already exists")
+      toast.error('Transition already exists')
       return null
     }
 
     const { data, error } = await supabase
-      .from("slot_transitions")
+      .from('slot_transitions')
       .insert({
         from_slot_id: fromSlotId,
         to_slot_id: toSlotId,
@@ -231,9 +231,9 @@ export default function SlotsPage() {
     const supabase = createClient()
 
     const { error } = await supabase
-      .from("slot_transitions")
+      .from('slot_transitions')
       .delete()
-      .eq("id", id)
+      .eq('id', id)
 
     if (error) {
       toast.error(error.message)

@@ -1,52 +1,60 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, Eye, EyeOff, CheckCircle } from "lucide-react"
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [organizationName, setOrganizationName] = useState("")
-  const [displayName, setDisplayName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [organizationName, setOrganizationName] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
   const passwordRequirements = [
-    { label: "At least 8 characters", met: password.length >= 8 },
-    { label: "Contains a number", met: /\d/.test(password) },
-    { label: "Contains uppercase", met: /[A-Z]/.test(password) },
-    { label: "Contains lowercase", met: /[a-z]/.test(password) },
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'Contains a number', met: /\d/.test(password) },
+    { label: 'Contains uppercase', met: /[A-Z]/.test(password) },
+    { label: 'Contains lowercase', met: /[a-z]/.test(password) },
   ]
 
   const allRequirementsMet = passwordRequirements.every((req) => req.met)
-  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0
+  const passwordsMatch =
+    password === confirmPassword && confirmPassword.length > 0
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
     if (!allRequirementsMet) {
-      setError("Please meet all password requirements")
+      setError('Please meet all password requirements')
       return
     }
 
     if (!passwordsMatch) {
-      setError("Passwords do not match")
+      setError('Passwords do not match')
       return
     }
 
@@ -54,12 +62,13 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient()
-      
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || 
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
             `${window.location.origin}/dashboard`,
           data: {
             organization_name: organizationName,
@@ -75,14 +84,14 @@ export default function SignupPage() {
       }
 
       if (!data.user) {
-        setError("Sign up failed. Please try again.")
+        setError('Sign up failed. Please try again.')
         setIsLoading(false)
         return
       }
 
       setIsSuccess(true)
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }
@@ -94,14 +103,19 @@ export default function SignupPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">Check your email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">
+            Check your email
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {"We've sent a confirmation link to "}
             <span className="font-medium text-foreground">{email}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center text-sm text-muted-foreground">
-          <p>Click the link in your email to verify your account and complete the setup.</p>
+          <p>
+            Click the link in your email to verify your account and complete the
+            setup.
+          </p>
           <p className="mt-4">
             {"Didn't receive the email? Check your spam folder or "}
             <button
@@ -129,7 +143,9 @@ export default function SignupPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-foreground">Create an account</CardTitle>
+        <CardTitle className="text-2xl font-bold text-foreground">
+          Create an account
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
           Set up your organization to get started
         </CardDescription>
@@ -186,7 +202,7 @@ export default function SignupPage() {
             <div className="relative">
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Create a strong password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -200,9 +216,13 @@ export default function SignupPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 tabIndex={-1}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
             {password.length > 0 && (
@@ -211,10 +231,12 @@ export default function SignupPage() {
                   <li
                     key={index}
                     className={`flex items-center gap-1 ${
-                      req.met ? "text-primary" : "text-muted-foreground"
+                      req.met ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    <CheckCircle className={`h-3 w-3 ${req.met ? "opacity-100" : "opacity-30"}`} />
+                    <CheckCircle
+                      className={`h-3 w-3 ${req.met ? 'opacity-100' : 'opacity-30'}`}
+                    />
                     {req.label}
                   </li>
                 ))}
@@ -225,7 +247,7 @@ export default function SignupPage() {
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -234,8 +256,10 @@ export default function SignupPage() {
               autoComplete="new-password"
             />
             {confirmPassword.length > 0 && (
-              <p className={`text-xs ${passwordsMatch ? "text-primary" : "text-destructive"}`}>
-                {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+              <p
+                className={`text-xs ${passwordsMatch ? 'text-primary' : 'text-destructive'}`}
+              >
+                {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
               </p>
             )}
           </div>
@@ -252,11 +276,11 @@ export default function SignupPage() {
                 Creating account...
               </>
             ) : (
-              "Create account"
+              'Create account'
             )}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Already have an account?{' '}
             <Link href="/login" className="text-primary hover:underline">
               Sign in
             </Link>

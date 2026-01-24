@@ -1,15 +1,15 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import Link from "next/link"
-import { Plus, FolderOpen, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { Plus, FolderOpen, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -19,28 +19,28 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Get user profile to get organization
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, role")
-    .eq("id", user.id)
+    .from('profiles')
+    .select('organization_id, role')
+    .eq('id', user.id)
     .single()
 
   if (!profile) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Get projects
   const { data: projects } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("organization_id", profile.organization_id)
-    .order("created_at", { ascending: false })
+    .from('projects')
+    .select('*')
+    .eq('organization_id', profile.organization_id)
+    .order('created_at', { ascending: false })
 
-  const canCreateProject = profile.role === "owner" || profile.role === "admin"
+  const canCreateProject = profile.role === 'owner' || profile.role === 'admin'
 
   return (
     <div className="space-y-6">
@@ -77,8 +77,10 @@ export default async function DashboardPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    {project.allowed_origins?.length || 0} allowed{" "}
-                    {project.allowed_origins?.length === 1 ? "origin" : "origins"}
+                    {project.allowed_origins?.length || 0} allowed{' '}
+                    {project.allowed_origins?.length === 1
+                      ? 'origin'
+                      : 'origins'}
                   </div>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={`/projects/${project.id}`}>

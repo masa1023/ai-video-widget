@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -15,24 +15,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, Eye, EyeOff, CheckCircle, KeyRound } from "lucide-react"
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Spinner } from '@/components/ui/spinner'
+import { AlertCircle, Eye, EyeOff, CheckCircle, KeyRound } from 'lucide-react'
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const passwordRequirements = [
-    { label: "At least 8 characters", met: password.length >= 8 },
-    { label: "Contains a number", met: /\d/.test(password) },
-    { label: "Contains uppercase", met: /[A-Z]/.test(password) },
-    { label: "Contains lowercase", met: /[a-z]/.test(password) },
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'Contains a number', met: /\d/.test(password) },
+    { label: 'Contains uppercase', met: /[A-Z]/.test(password) },
+    { label: 'Contains lowercase', met: /[a-z]/.test(password) },
   ]
 
   const allRequirementsMet = passwordRequirements.every((req) => req.met)
@@ -44,12 +44,12 @@ export default function UpdatePasswordPage() {
     setError(null)
 
     if (!allRequirementsMet) {
-      setError("Please meet all password requirements")
+      setError('Please meet all password requirements')
       return
     }
 
     if (!passwordsMatch) {
-      setError("Passwords do not match")
+      setError('Passwords do not match')
       return
     }
 
@@ -68,10 +68,10 @@ export default function UpdatePasswordPage() {
         return
       }
 
-      router.push("/dashboard")
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }
@@ -103,7 +103,7 @@ export default function UpdatePasswordPage() {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Create a strong password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -117,7 +117,7 @@ export default function UpdatePasswordPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -132,11 +132,11 @@ export default function UpdatePasswordPage() {
                     <li
                       key={index}
                       className={`flex items-center gap-1 ${
-                        req.met ? "text-primary" : "text-muted-foreground"
+                        req.met ? 'text-primary' : 'text-muted-foreground'
                       }`}
                     >
                       <CheckCircle
-                        className={`h-3 w-3 ${req.met ? "opacity-100" : "opacity-30"}`}
+                        className={`h-3 w-3 ${req.met ? 'opacity-100' : 'opacity-30'}`}
                       />
                       {req.label}
                     </li>
@@ -148,7 +148,7 @@ export default function UpdatePasswordPage() {
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -158,9 +158,11 @@ export default function UpdatePasswordPage() {
               />
               {confirmPassword.length > 0 && (
                 <p
-                  className={`text-xs ${passwordsMatch ? "text-primary" : "text-destructive"}`}
+                  className={`text-xs ${passwordsMatch ? 'text-primary' : 'text-destructive'}`}
                 >
-                  {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                  {passwordsMatch
+                    ? 'Passwords match'
+                    : 'Passwords do not match'}
                 </p>
               )}
             </div>
@@ -177,7 +179,7 @@ export default function UpdatePasswordPage() {
                   Updating password...
                 </>
               ) : (
-                "Update password"
+                'Update password'
               )}
             </Button>
           </CardFooter>

@@ -1,6 +1,6 @@
-import React from "react"
-import { redirect, notFound } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import React from 'react'
+import { redirect, notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function ProjectLayout({
   children,
@@ -17,14 +17,14 @@ export default async function ProjectLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect('/login')
   }
 
   // Verify project access
   const { data: project, error } = await supabase
-    .from("projects")
-    .select("id, name, organization_id")
-    .eq("id", projectId)
+    .from('projects')
+    .select('id, name, organization_id')
+    .eq('id', projectId)
     .single()
 
   if (error || !project) {

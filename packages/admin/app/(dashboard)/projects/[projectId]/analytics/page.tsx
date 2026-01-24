@@ -1,23 +1,23 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -25,8 +25,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
+} from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Eye,
   Play,
@@ -35,7 +35,7 @@ import {
   TrendingUp,
   Video,
   BarChart3,
-} from "lucide-react"
+} from 'lucide-react'
 
 interface SlotType {
   id: string
@@ -43,7 +43,7 @@ interface SlotType {
   video_id: string
   name: string
   is_entry_point: boolean
-  button_type: "cta" | "detail" | "transition"
+  button_type: 'cta' | 'detail' | 'transition'
   button_label: string
   button_url: string | null
   position_x: number
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const [period, setPeriod] = useState("30")
+  const [period, setPeriod] = useState('30')
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [slots, setSlots] = useState<SlotType[]>([])
@@ -104,14 +104,14 @@ export default function AnalyticsPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     // Get slots and videos for mapping
     const [slotsResult, videosResult] = await Promise.all([
-      supabase.from("slots").select("*").eq("project_id", projectId),
-      supabase.from("videos").select("*").eq("project_id", projectId),
+      supabase.from('slots').select('*').eq('project_id', projectId),
+      supabase.from('videos').select('*').eq('project_id', projectId),
     ])
 
     setSlots(slotsResult.data || [])
@@ -123,13 +123,13 @@ export default function AnalyticsPage() {
 
     // Get sessions for this project in the period
     const { data: sessions } = await supabase
-      .from("sessions")
-      .select("id")
-      .eq("project_id", projectId)
-      .gte("created_at", daysAgo.toISOString())
+      .from('sessions')
+      .select('id')
+      .eq('project_id', projectId)
+      .gte('created_at', daysAgo.toISOString())
 
     const sessionIds = sessions?.map((s) => s.id) || []
-    const safeSessionIds = sessionIds.length > 0 ? sessionIds : ["none"]
+    const safeSessionIds = sessionIds.length > 0 ? sessionIds : ['none']
 
     // Get all event counts
     const [
@@ -141,29 +141,29 @@ export default function AnalyticsPage() {
       clicksByTypeResult,
     ] = await Promise.all([
       supabase
-        .from("event_widget_opens")
-        .select("id", { count: "exact", head: true })
-        .in("session_id", safeSessionIds),
+        .from('event_widget_opens')
+        .select('id', { count: 'exact', head: true })
+        .in('session_id', safeSessionIds),
       supabase
-        .from("event_video_starts")
-        .select("id, slot_id", { count: "exact" })
-        .in("session_id", safeSessionIds),
+        .from('event_video_starts')
+        .select('id, slot_id', { count: 'exact' })
+        .in('session_id', safeSessionIds),
       supabase
-        .from("event_video_views")
-        .select("id, slot_id", { count: "exact" })
-        .in("session_id", safeSessionIds),
+        .from('event_video_views')
+        .select('id, slot_id', { count: 'exact' })
+        .in('session_id', safeSessionIds),
       supabase
-        .from("event_clicks")
-        .select("id, slot_id, button_type", { count: "exact" })
-        .in("session_id", safeSessionIds),
+        .from('event_clicks')
+        .select('id, slot_id, button_type', { count: 'exact' })
+        .in('session_id', safeSessionIds),
       supabase
-        .from("event_conversions")
-        .select("id", { count: "exact", head: true })
-        .in("session_id", safeSessionIds),
+        .from('event_conversions')
+        .select('id', { count: 'exact', head: true })
+        .in('session_id', safeSessionIds),
       supabase
-        .from("event_clicks")
-        .select("button_type")
-        .in("session_id", safeSessionIds),
+        .from('event_clicks')
+        .select('button_type')
+        .in('session_id', safeSessionIds),
     ])
 
     const widgetOpens = widgetOpensResult.count || 0
@@ -171,7 +171,8 @@ export default function AnalyticsPage() {
     const videoViews = videoViewsResult.count || 0
     const clicks = clicksResult.count || 0
     const conversions = conversionsResult.count || 0
-    const conversionRate = widgetOpens > 0 ? (conversions / widgetOpens) * 100 : 0
+    const conversionRate =
+      widgetOpens > 0 ? (conversions / widgetOpens) * 100 : 0
 
     // Calculate slot stats
     const slotStats = (slotsResult.data || []).map((slot) => {
@@ -188,7 +189,7 @@ export default function AnalyticsPage() {
       return {
         slotId: slot.id,
         slotName: slot.name,
-        videoTitle: video?.title || "Unknown",
+        videoTitle: video?.title || 'Unknown',
         starts,
         views,
         viewRate: starts > 0 ? (views / starts) * 100 : 0,
@@ -228,12 +229,12 @@ export default function AnalyticsPage() {
 
   const formatButtonType = (type: string) => {
     switch (type) {
-      case "cta":
-        return "CTA Links"
-      case "detail":
-        return "Details"
-      case "transition":
-        return "Transitions"
+      case 'cta':
+        return 'CTA Links'
+      case 'detail':
+        return 'Details'
+      case 'transition':
+        return 'Transitions'
       default:
         return type
     }
@@ -321,7 +322,9 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Conversion Rate
+            </CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -369,7 +372,9 @@ export default function AnalyticsPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">{stat.starts}</TableCell>
+                      <TableCell className="text-right">
+                        {stat.starts}
+                      </TableCell>
                       <TableCell className="text-right">{stat.views}</TableCell>
                       <TableCell className="text-right">
                         {stat.viewRate.toFixed(0)}%
@@ -396,9 +401,7 @@ export default function AnalyticsPage() {
               <BarChart3 className="h-5 w-5" />
               Click Breakdown
             </CardTitle>
-            <CardDescription>
-              Distribution of click types
-            </CardDescription>
+            <CardDescription>Distribution of click types</CardDescription>
           </CardHeader>
           <CardContent>
             {data?.clickBreakdown && data.clickBreakdown.length > 0 ? (
