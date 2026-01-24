@@ -156,23 +156,23 @@ CREATE INDEX idx_event_video_starts_slot_id ON event_video_starts(slot_id);
 CREATE INDEX idx_event_video_starts_created_at ON event_video_starts(created_at);
 
 -- =============================================================================
--- 11. event_video_milestones - 再生進捗イベント
+-- 11. event_video_views - 動画視聴イベント
 -- =============================================================================
-CREATE TABLE event_video_milestones (
+CREATE TABLE event_video_views (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
-    milestone INT NOT NULL,  -- 25, 50, 75, 100
-    played_seconds FLOAT,  -- 到達時点までの実再生時間（秒）
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT valid_milestone CHECK (milestone IN (25, 50, 75, 100))
+    played_seconds FLOAT NOT NULL, -- Actual played duration in seconds
+    duration_seconds FLOAT NOT NULL, -- Total duration of the video
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_event_video_milestones_session_id ON event_video_milestones(session_id);
-CREATE INDEX idx_event_video_milestones_video_id ON event_video_milestones(video_id);
-CREATE INDEX idx_event_video_milestones_slot_id ON event_video_milestones(slot_id);
-CREATE INDEX idx_event_video_milestones_created_at ON event_video_milestones(created_at);
+-- Create indexes
+CREATE INDEX idx_event_video_views_session_id ON event_video_views(session_id);
+CREATE INDEX idx_event_video_views_video_id ON event_video_views(video_id);
+CREATE INDEX idx_event_video_views_slot_id ON event_video_views(slot_id);
+CREATE INDEX idx_event_video_views_created_at ON event_video_views(created_at);
 
 -- =============================================================================
 -- 12. event_clicks - ボタンクリックイベント
@@ -249,7 +249,7 @@ ALTER TABLE conversion_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_widget_opens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_video_starts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE event_video_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_video_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_clicks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_conversions ENABLE ROW LEVEL SECURITY;
 
@@ -286,7 +286,7 @@ CREATE POLICY "Service role full access" ON event_widget_opens
 CREATE POLICY "Service role full access" ON event_video_starts
     FOR ALL USING (auth.role() = 'service_role');
 
-CREATE POLICY "Service role full access" ON event_video_milestones
+CREATE POLICY "Service role full access" ON event_video_views
     FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "Service role full access" ON event_clicks
@@ -423,8 +423,8 @@ CREATE POLICY "Users can select own org event_video_starts" ON event_video_start
         )
     );
 
--- event_video_milestones: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_video_milestones" ON event_video_milestones
+-- event_video_views: セッション経由で確認（読み取りのみ）
+CREATE POLICY "Users can select own org event_video_views" ON event_video_views
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s

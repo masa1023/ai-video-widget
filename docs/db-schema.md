@@ -11,9 +11,9 @@
 - **組織構造**: 1ユーザー = 1組織に所属（シンプル）、1組織 = 複数プロジェクト
 - **セッション**: 540日有効（長期ユーザー識別）
 - **スロット**: navigation-graph のノードと同義（動画 + ボタン設定 + 分岐先）
-- **進捗記録**: マイルストーン毎に1レコード（25%, 50%, 75%, 100%）
-- **字幕**: 静的ファイル管理（DB対象外）
+- **動画再生ログ**: 離脱・視聴完了時に再生時間を記録 (`event_video_views`)
 - **CV検知**: ウィジェットがページ遷移を監視し、`conversion_rules` と照合
+- **字幕**: 静的ファイル管理（DB対象外）
 
 ## ER図（概念）
 
@@ -29,7 +29,7 @@ auth.users (Supabase Auth)
             └── sessions (セッション)
                 ├── event_widget_opens (ウィジェット展開)
                 ├── event_video_starts (動画再生開始)
-                ├── event_video_milestones (再生進捗 25/50/75/100%)
+                ├── event_video_views (視聴ログ: 離脱/完了時)
                 ├── event_clicks (ボタンクリック)
                 └── event_conversions (CV達成)
 ```
@@ -226,26 +226,25 @@ CREATE INDEX idx_event_video_starts_slot_id ON event_video_starts(slot_id);
 CREATE INDEX idx_event_video_starts_created_at ON event_video_starts(created_at);
 ```
 
-### event_video_milestones
+### event_video_views
 
-動画再生進捗イベント。25%, 50%, 75%, 100% 到達時に記録。
+動画視聴ログ。離脱時および再生完了時に記録。
 
 ```sql
-CREATE TABLE event_video_milestones (
+CREATE TABLE event_video_views (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
-    milestone INT NOT NULL,  -- 25, 50, 75, 100
-    played_seconds FLOAT,  -- 到達時点までの実再生時間（秒）
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT valid_milestone CHECK (milestone IN (25, 50, 75, 100))
+    played_seconds FLOAT NOT NULL,  -- 再生時間（秒）
+    duration_seconds FLOAT NOT NULL,  -- 動画の長さ（秒）
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_event_video_milestones_session_id ON event_video_milestones(session_id);
-CREATE INDEX idx_event_video_milestones_video_id ON event_video_milestones(video_id);
-CREATE INDEX idx_event_video_milestones_slot_id ON event_video_milestones(slot_id);
-CREATE INDEX idx_event_video_milestones_created_at ON event_video_milestones(created_at);
+CREATE INDEX idx_event_video_views_session_id ON event_video_views(session_id);
+CREATE INDEX idx_event_video_views_video_id ON event_video_views(video_id);
+CREATE INDEX idx_event_video_views_slot_id ON event_video_views(slot_id);
+CREATE INDEX idx_event_video_views_created_at ON event_video_views(created_at);
 ```
 
 ### event_clicks
@@ -412,115 +411,6 @@ CREATE TRIGGER on_auth_user_created
 
 1. 運営側が Supabase Dashboard で organization を作成
 2. ユーザー招待時に organization_id を手動で設定
-
----
-
-## ウィジェット実装との対応
-
-### video-config → videos + slots
-
-現在の `videoConfig`:
-
-```javascript
-{
-  id: 1,
-  title: 'オープニング',
-  videoUrl: '...',
-  detailButton: { text: '詳細はこちら', link: '...' },
-  ctaButton: { text: '予約する', link: '...' },
-  subtitles: [...]
-}
-```
-
-→ `videos` テーブル + `slots` テーブルに分離:
-
-- `videos`: id, title, video_url, duration_seconds
-- `slots`: video_id, detail_button_text, detail_button_url, cta_button_text, cta_button_url
-
-### navigation-graph → slots + slot_transitions
-
-現在の `navigationGraph`:
-
-```javascript
-{
-  'node-1': {
-    videoId: 1,
-    nextNodeIds: ['node-2', 'node-3', 'node-4'],
-  },
-  ...
-}
-```
-
-→ `slots` + `slot_transitions` テーブルに対応:
-
-- `slots.slot_key` = 'node-1'
-- `slots.video_id` = videos.id（videoId: 1 に対応）
-- `slot_transitions` = nextNodeIds の各要素に対応
-
----
-
-## 集計クエリ例
-
-### UU（ユニークセッション）数
-
-```sql
-SELECT COUNT(DISTINCT session_id)
-FROM event_widget_opens
-WHERE created_at >= NOW() - INTERVAL '30 days';
-```
-
-### 動画再生数（動画ID別）
-
-```sql
-SELECT v.title, COUNT(*) as play_count
-FROM event_video_starts evs
-JOIN videos v ON evs.video_id = v.id
-WHERE evs.created_at >= NOW() - INTERVAL '30 days'
-GROUP BY v.id, v.title
-ORDER BY play_count DESC;
-```
-
-### 再生完了率（動画ID別）
-
-```sql
-SELECT
-    v.title,
-    COUNT(DISTINCT evs.session_id) as started,
-    COUNT(DISTINCT CASE WHEN evm.milestone = 100 THEN evm.session_id END) as completed,
-    ROUND(
-        COUNT(DISTINCT CASE WHEN evm.milestone = 100 THEN evm.session_id END)::NUMERIC
-        / NULLIF(COUNT(DISTINCT evs.session_id), 0) * 100,
-        2
-    ) as completion_rate
-FROM event_video_starts evs
-JOIN videos v ON evs.video_id = v.id
-LEFT JOIN event_video_milestones evm ON evs.video_id = evm.video_id AND evs.session_id = evm.session_id
-WHERE evs.created_at >= NOW() - INTERVAL '30 days'
-GROUP BY v.id, v.title;
-```
-
-### CV数とCV率
-
-```sql
-WITH widget_users AS (
-    SELECT DISTINCT session_id
-    FROM event_widget_opens
-    WHERE created_at >= NOW() - INTERVAL '30 days'
-),
-conversions AS (
-    SELECT DISTINCT session_id
-    FROM event_conversions
-    WHERE created_at >= NOW() - INTERVAL '30 days'
-)
-SELECT
-    (SELECT COUNT(*) FROM widget_users) as total_users,
-    (SELECT COUNT(*) FROM conversions WHERE session_id IN (SELECT session_id FROM widget_users)) as converted_users,
-    ROUND(
-        (SELECT COUNT(*) FROM conversions WHERE session_id IN (SELECT session_id FROM widget_users))::NUMERIC
-        / NULLIF((SELECT COUNT(*) FROM widget_users), 0) * 100,
-        2
-    ) as conversion_rate;
-```
 
 ---
 

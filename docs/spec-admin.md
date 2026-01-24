@@ -347,7 +347,7 @@ CV 条件の定義と一覧。
 | ------------------ | ---------------------------------------- | ---------------------- |
 | ウィジェット展開数 | ウィジェットを開いたユニークセッション数 | event_widget_opens     |
 | 動画再生数         | 総再生回数                               | event_video_starts     |
-| 平均視聴完了率     | milestone=100 到達率                     | event_video_milestones |
+| 平均視聴完了率     | 再生時間 / 動画長 の平均                 | event_video_views      |
 | CV 数              | コンバージョン数                         | event_conversions      |
 | CV 率              | CV数 / ウィジェット展開数                | 計算                   |
 
@@ -355,15 +355,13 @@ CV 条件の定義と一覧。
 
 テーブル形式で表示。
 
-| カラム       | 説明                          |
-| ------------ | ----------------------------- |
-| 動画タイトル | videos.title                  |
-| 再生数       | event_video_starts のカウント |
-| 25% 到達     | milestone=25 のカウント       |
-| 50% 到達     | milestone=50 のカウント       |
-| 75% 到達     | milestone=75 のカウント       |
-| 完了         | milestone=100 のカウント      |
-| 完了率       | 完了 / 再生数                 |
+| カラム       | 説明                                    |
+| ------------ | --------------------------------------- |
+| 動画タイトル | videos.title                            |
+| 再生数       | event_video_starts のカウント           |
+| 平均再生時間 | event_video_views.played_seconds の平均 |
+| 完了数       | 95%以上再生された数                     |
+| 完了率       | 完了数 / 再生数                         |
 
 #### クリック分析
 
@@ -425,20 +423,20 @@ interface EventPayload {
   eventType:
     | 'widget_open'
     | 'video_start'
-    | 'video_milestone'
+    | 'video_view'
     | 'click'
     | 'conversion'
   data: {
     // widget_open
     referrer?: string
 
-    // video_start, video_milestone, click
+    // video_start, video_view, click
     slotId?: string
     videoId?: string
 
-    // video_milestone
-    milestone?: 25 | 50 | 75 | 100
+    // video_view
     playedSeconds?: number
+    durationSeconds?: number
 
     // click
     clickType?: 'cta' | 'detail' | 'transition'
