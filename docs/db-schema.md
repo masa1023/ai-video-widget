@@ -143,7 +143,6 @@ CREATE TABLE slot_transitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     from_slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
     to_slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
-    button_label TEXT NOT NULL,  -- 遷移ボタンのラベル
     display_order INT NOT NULL DEFAULT 0,  -- 表示順
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (from_slot_id, to_slot_id)
