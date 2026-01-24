@@ -61,9 +61,9 @@ interface VideoType {
   id: string
   project_id: string
   title: string
-  storage_path: string
+  video_url: string
   thumbnail_path: string | null
-  duration_ms: number
+  duration_seconds: number
   created_at: string
   updated_at: string
 }
@@ -187,7 +187,23 @@ export default function VideosPage() {
 
       // Generate unique file path
       const ext = uploadFile.name.split('.').pop()
-      const fileName = `${projectId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single()
+      if (!profile) {
+        router.push('/login')
+        return
+      }
+      const fileName = `${profile.organization_id}/${projectId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -209,8 +225,8 @@ export default function VideosPage() {
       const { error: insertError } = await supabase.from('videos').insert({
         project_id: projectId,
         title: uploadTitle.trim(),
-        storage_path: fileName,
-        duration_ms: duration,
+        video_url: fileName,
+        duration_seconds: duration,
       })
 
       setUploadProgress(100)
@@ -288,8 +304,8 @@ export default function VideosPage() {
       const supabase = createClient()
 
       // Delete from storage first
-      if (deleteVideo.storage_path) {
-        await supabase.storage.from('videos').remove([deleteVideo.storage_path])
+      if (deleteVideo.video_url) {
+        await supabase.storage.from('videos').remove([deleteVideo.video_url])
       }
 
       // Delete video record
@@ -443,7 +459,7 @@ export default function VideosPage() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {formatDuration(video.duration_ms)}
+                        {formatDuration(video.duration_seconds)}
                       </CardDescription>
                     </div>
                   </div>

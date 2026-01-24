@@ -117,15 +117,16 @@ export default function SlotsPage() {
       .insert({
         project_id: projectId,
         video_id: slot.video_id!,
-        name: slot.name!,
+        slot_key: slot.name!,
         is_entry_point: slot.is_entry_point || false,
-        button_type: slot.button_type || 'cta',
-        button_label: slot.button_label || 'Click Here',
-        button_url: slot.button_url || null,
+        detail_button_text: 'TEXT',
+        detail_button_url: 'TEXT',
+        cta_button_text: 'TEXT',
+        cta_button_url: 'TEXT',
         position_x: slot.position_x || 0,
         position_y: slot.position_y || 0,
       })
-      .select()
+      .select('*')
       .single()
 
     if (error) {
