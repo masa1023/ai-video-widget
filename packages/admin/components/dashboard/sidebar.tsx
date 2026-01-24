@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   TreeDeciduous,
   LayoutDashboard,
@@ -16,7 +16,7 @@ import {
   LogOut,
   ChevronsUpDown,
   Check,
-} from "lucide-react"
+} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,11 +37,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { signOut } from "@/lib/auth/actions"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { signOut } from '@/lib/auth/actions'
+import { cn } from '@/lib/utils'
 
 interface DashboardSidebarProps {
   user: {
@@ -76,32 +76,32 @@ export function DashboardSidebar({
   // Project navigation items
   const projectNavItems = [
     {
-      title: "Overview",
+      title: 'Overview',
       href: (id: string) => `/projects/${id}`,
       icon: LayoutDashboard,
     },
     {
-      title: "Videos",
+      title: 'Videos',
       href: (id: string) => `/projects/${id}/videos`,
       icon: Video,
     },
     {
-      title: "Slots",
+      title: 'Slots',
       href: (id: string) => `/projects/${id}/slots`,
       icon: Layers,
     },
     {
-      title: "Conversions",
+      title: 'Conversions',
       href: (id: string) => `/projects/${id}/conversions`,
       icon: Target,
     },
     {
-      title: "Analytics",
+      title: 'Analytics',
       href: (id: string) => `/projects/${id}/analytics`,
       icon: BarChart3,
     },
     {
-      title: "Settings",
+      title: 'Settings',
       href: (id: string) => `/projects/${id}/settings`,
       icon: Settings,
     },
@@ -111,7 +111,7 @@ export function DashboardSidebar({
     await signOut()
   }
 
-  const isOwner = user.role === "owner"
+  const isOwner = user.role === 'owner'
 
   return (
     <Sidebar>
@@ -165,12 +165,14 @@ export function DashboardSidebar({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="gap-2 p-2"
-                  onSelect={() => router.push("/dashboard/projects/new")}
+                  onSelect={() => router.push('/dashboard/projects/new')}
                 >
                   <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                     <Plus className="size-4" />
                   </div>
-                  <div className="font-medium text-muted-foreground">Add project</div>
+                  <div className="font-medium text-muted-foreground">
+                    Add project
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -212,11 +214,8 @@ export function DashboardSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === "/dashboard/settings"}
-                >
-                  <Link href="/dashboard/settings">
+                <SidebarMenuButton asChild isActive={pathname === '/settings'}>
+                  <Link href="/settings">
                     <Settings className="h-4 w-4" />
                     <span>Account</span>
                   </Link>
@@ -226,9 +225,9 @@ export function DashboardSidebar({
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === "/dashboard/settings/members"}
+                    isActive={pathname === '/settings/members'}
                   >
-                    <Link href="/dashboard/settings/members">
+                    <Link href="/settings/members">
                       <Users className="h-4 w-4" />
                       <span>Members</span>
                     </Link>
@@ -270,7 +269,7 @@ export function DashboardSidebar({
                 className="w-(--radix-dropdown-menu-trigger-width)"
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">
+                  <Link href="/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>
