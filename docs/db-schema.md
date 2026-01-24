@@ -44,8 +44,9 @@ auth.users (Supabase Auth)
 
 ```sql
 CREATE TABLE organizations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- IDは手動指定
     name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'inactive', -- 'active' or 'inactive'
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -380,36 +381,6 @@ CREATE POLICY "Users can access own org event_widget_opens" ON event_widget_open
 CREATE POLICY "Service role full access" ON [table_name]
     FOR ALL USING (auth.role() = 'service_role');
 ```
-
----
-
-## トリガー
-
-### ユーザー作成時の profiles 自動作成
-
-```sql
-CREATE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO profiles (id, email, display_name)
-    VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
-```
-
-**注意**: このトリガーでは `organization_id` を設定していません。初期運用では:
-
-1. 運営側が Supabase Dashboard で organization を作成
-2. ユーザー招待時に organization_id を手動で設定
 
 ---
 
