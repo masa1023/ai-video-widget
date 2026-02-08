@@ -1,6 +1,44 @@
+-- =============================================================================
+-- Triggers
+-- =============================================================================
+
+-- updated_at を自動更新するトリガー関数
+CREATE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 各テーブルに updated_at トリガーを設定
+CREATE TRIGGER update_organizations_updated_at
+    BEFORE UPDATE ON organizations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_projects_updated_at
+    BEFORE UPDATE ON projects
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_videos_updated_at
+    BEFORE UPDATE ON videos
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_slots_updated_at
+    BEFORE UPDATE ON slots
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_conversion_rules_updated_at
+    BEFORE UPDATE ON conversion_rules
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Trigger function to create organization and profile on user signup
 -- This runs with security definer privileges to bypass RLS
-CREATE OR REPLACE FUNCTION public.handle_new_user()
+CREATE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -43,9 +81,6 @@ BEGIN
 END;
 $$;
 
--- Drop existing trigger if exists
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
 -- Create trigger to run after user signup
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -53,7 +88,7 @@ CREATE TRIGGER on_auth_user_created
   EXECUTE FUNCTION public.handle_new_user();
 
 -- Function to activate organization when email is confirmed
-CREATE OR REPLACE FUNCTION public.handle_user_confirmed()
+CREATE FUNCTION public.handle_user_confirmed()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -72,9 +107,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
--- Drop existing trigger if exists
-DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;
 
 -- Create trigger to activate org when email confirmed
 CREATE TRIGGER on_auth_user_confirmed

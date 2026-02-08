@@ -23,12 +23,6 @@ ON CONFLICT (id) DO UPDATE SET
 -- STORAGE POLICIES
 -- =============================================================================
 
--- Drop existing policies
-DROP POLICY IF EXISTS "videos_bucket_select" ON storage.objects;
-DROP POLICY IF EXISTS "videos_bucket_insert" ON storage.objects;
-DROP POLICY IF EXISTS "videos_bucket_update" ON storage.objects;
-DROP POLICY IF EXISTS "videos_bucket_delete" ON storage.objects;
-
 -- Public read access for video playback (widget needs this)
 CREATE POLICY "videos_bucket_select" ON storage.objects
     FOR SELECT USING (bucket_id = 'videos');

@@ -1,12 +1,15 @@
 -- AI Video Widget - Initial Schema Migration
--- This migration creates all tables, indexes, RLS policies, and triggers
+-- This migration creates all tables, indexes and RLS policies
 
 -- =============================================================================
 -- 1. organizations - 企業/組織（マルチテナント最上位単位）
 -- =============================================================================
+CREATE TYPE organization_status AS ENUM ('active', 'inactive');
+
 CREATE TABLE organizations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    status organization_status NOT NULL DEFAULT 'inactive',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -36,13 +39,13 @@ CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    domain TEXT,  -- 例: "example.com"（オプション）
+    allowed_origins TEXT[],
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_projects_organization_id ON projects(organization_id);
-CREATE INDEX idx_projects_domain ON projects(domain);
+CREATE INDEX idx_projects_allowed_origins ON projects(allowed_origins);
 
 -- =============================================================================
 -- 4. videos - 動画マスタ
@@ -74,6 +77,8 @@ CREATE TABLE slots (
     detail_button_url TEXT,
     cta_button_text TEXT,
     cta_button_url TEXT,
+    position_x FLOAT DEFAULT 0,
+    position_y FLOAT DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (project_id, slot_key)
@@ -89,13 +94,13 @@ CREATE TABLE slot_transitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     from_slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
     to_slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
-    button_label TEXT NOT NULL,  -- 遷移ボタンのラベル
     display_order INT NOT NULL DEFAULT 0,  -- 表示順
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (from_slot_id, to_slot_id)
 );
 
 CREATE INDEX idx_slot_transitions_from_slot_id ON slot_transitions(from_slot_id);
+CREATE INDEX idx_slot_transitions_to_slot_id ON slot_transitions(to_slot_id);
 
 -- =============================================================================
 -- 7. conversion_rules - CV条件定義
@@ -104,7 +109,7 @@ CREATE TABLE conversion_rules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     name TEXT NOT NULL,  -- 例: "予約完了", "お問い合わせ送信"
-    rule_type TEXT NOT NULL DEFAULT 'url_match',  -- 'url_match', 'url_contains', 'url_regex'
+    rule_type TEXT NOT NULL DEFAULT 'url_match' CHECK (rule_type IN ('url_match', 'url_contains', 'url_regex')),
     rule_value TEXT NOT NULL,  -- マッチ対象のURL/パターン
     attribution_days INT NOT NULL DEFAULT 30,  -- アトリビューション期間（日）
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -234,6 +239,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
+
+-- Check if user's organization is active
+CREATE OR REPLACE FUNCTION is_organization_active()
+RETURNS BOOLEAN AS $$
+DECLARE
+    result BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM organizations o
+        WHERE o.id = get_user_organization_id()
+        AND o.status = 'active'
+    ) INTO result;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Get user's role in their organization
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS member_role AS $$
+DECLARE
+    user_role member_role;
+BEGIN
+    SELECT role INTO user_role 
+    FROM profiles 
+    WHERE id = auth.uid();
+    RETURN user_role;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Check if user has edit permissions (owner or admin)
+CREATE OR REPLACE FUNCTION can_edit()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN get_user_role() IN ('owner', 'admin');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Check if user is owner
+CREATE OR REPLACE FUNCTION is_owner()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN get_user_role() = 'owner';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
 -- =============================================================================
 -- Row Level Security (RLS)
 -- =============================================================================
@@ -304,209 +354,250 @@ CREATE POLICY "Users can view own profile" ON profiles
     FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile" ON profiles
-    FOR UPDATE USING (auth.uid() = id);
+    FOR UPDATE USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+-- Owners can view all profiles in their organization (for member management)
+CREATE POLICY "Owners can view all profiles in their organization" ON profiles
+    FOR SELECT USING (
+        organization_id = get_user_organization_id() 
+        AND is_owner()
+    );
 
 -- organizations: 自分の組織のみ参照可能
 CREATE POLICY "Users can view own organization" ON organizations
     FOR SELECT USING (id = get_user_organization_id());
 
+-- Owners can update their organization details
+CREATE POLICY "Owners can update their organization details" ON organizations
+    FOR UPDATE USING (
+        id = get_user_organization_id() 
+        AND is_owner()
+    )
+    WITH CHECK (
+        id = get_user_organization_id() 
+        AND is_owner()
+    );
+
 -- projects: 自分の組織のプロジェクトのみアクセス可能
-CREATE POLICY "Users can select own org projects" ON projects
-    FOR SELECT USING (organization_id = get_user_organization_id());
+-- Users can view projects in their organization (when org is active)
+CREATE POLICY "Users can view projects in their organization" ON projects
+    FOR SELECT USING (
+        organization_id = get_user_organization_id()
+        AND is_organization_active()
+    );
 
-CREATE POLICY "Users can insert own org projects" ON projects
-    FOR INSERT WITH CHECK (organization_id = get_user_organization_id());
+-- Owners and admins can create projects
+CREATE POLICY "Owners and admins can create projects" ON projects
+    FOR INSERT WITH CHECK (
+        organization_id = get_user_organization_id()
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can update own org projects" ON projects
-    FOR UPDATE USING (organization_id = get_user_organization_id());
+-- Owners and admins can update projects
+CREATE POLICY "Owners and admins can update projects" ON projects
+    FOR UPDATE USING (
+        organization_id = get_user_organization_id()
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can delete own org projects" ON projects
-    FOR DELETE USING (organization_id = get_user_organization_id());
+-- Only owners can delete projects
+CREATE POLICY "Only owners can delete projects" ON projects
+    FOR DELETE USING (
+        organization_id = get_user_organization_id()
+        AND is_organization_active()
+        AND is_owner()
+    );
+
 
 -- videos: プロジェクト経由で確認
-CREATE POLICY "Users can select own org videos" ON videos
-    FOR SELECT USING (is_my_organization_project(project_id));
+CREATE POLICY "Users can view videos in their organization" ON videos
+    FOR SELECT USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+    );
 
-CREATE POLICY "Users can insert own org videos" ON videos
-    FOR INSERT WITH CHECK (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can create videos" ON videos
+    FOR INSERT WITH CHECK (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can update own org videos" ON videos
-    FOR UPDATE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can update videos" ON videos
+    FOR UPDATE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can delete own org videos" ON videos
-    FOR DELETE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can delete videos" ON videos
+    FOR DELETE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
 -- slots: プロジェクト経由で確認
-CREATE POLICY "Users can select own org slots" ON slots
-    FOR SELECT USING (is_my_organization_project(project_id));
+CREATE POLICY "Users can view slots in their organization" ON slots
+    FOR SELECT USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+    );
 
-CREATE POLICY "Users can insert own org slots" ON slots
-    FOR INSERT WITH CHECK (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can create slots" ON slots
+    FOR INSERT WITH CHECK (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can update own org slots" ON slots
-    FOR UPDATE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can update slots" ON slots
+    FOR UPDATE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can delete own org slots" ON slots
-    FOR DELETE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can delete slots" ON slots
+    FOR DELETE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
 -- slot_transitions: スロット経由で確認
-CREATE POLICY "Users can select own org slot_transitions" ON slot_transitions
+CREATE POLICY "Users can view slot_transitions in their organization" ON slot_transitions
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM slots s
             WHERE s.id = from_slot_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
 
-CREATE POLICY "Users can insert own org slot_transitions" ON slot_transitions
+CREATE POLICY "Owners and admins can create slot_transitions" ON slot_transitions
     FOR INSERT WITH CHECK (
         EXISTS (
             SELECT 1 FROM slots s
             WHERE s.id = from_slot_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
+            AND can_edit()
         )
     );
 
-CREATE POLICY "Users can update own org slot_transitions" ON slot_transitions
+CREATE POLICY "Owners and admins can update slot_transitions" ON slot_transitions
     FOR UPDATE USING (
         EXISTS (
             SELECT 1 FROM slots s
             WHERE s.id = from_slot_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
+            AND can_edit()
         )
     );
 
-CREATE POLICY "Users can delete own org slot_transitions" ON slot_transitions
+CREATE POLICY "Owners and admins can delete slot_transitions" ON slot_transitions
     FOR DELETE USING (
         EXISTS (
             SELECT 1 FROM slots s
             WHERE s.id = from_slot_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
+            AND can_edit()
         )
     );
 
 -- conversion_rules: プロジェクト経由で確認
-CREATE POLICY "Users can select own org conversion_rules" ON conversion_rules
-    FOR SELECT USING (is_my_organization_project(project_id));
+CREATE POLICY "Users can view conversion_rules in their organization" ON conversion_rules
+    FOR SELECT USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+    );
 
-CREATE POLICY "Users can insert own org conversion_rules" ON conversion_rules
-    FOR INSERT WITH CHECK (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can create conversion_rules" ON conversion_rules
+    FOR INSERT WITH CHECK (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can update own org conversion_rules" ON conversion_rules
-    FOR UPDATE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can update conversion_rules" ON conversion_rules
+    FOR UPDATE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
-CREATE POLICY "Users can delete own org conversion_rules" ON conversion_rules
-    FOR DELETE USING (is_my_organization_project(project_id));
+CREATE POLICY "Owners and admins can delete conversion_rules" ON conversion_rules
+    FOR DELETE USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+        AND can_edit()
+    );
 
 -- sessions: プロジェクト経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org sessions" ON sessions
-    FOR SELECT USING (is_my_organization_project(project_id));
+CREATE POLICY "Users can view sessions in their organization" ON sessions
+    FOR SELECT USING (
+        is_my_organization_project(project_id)
+        AND is_organization_active()
+    );
 
 -- event_widget_opens: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_widget_opens" ON event_widget_opens
+CREATE POLICY "Users can view event_widget_opens in their organization" ON event_widget_opens
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s
             WHERE s.id = session_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
 
 -- event_video_starts: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_video_starts" ON event_video_starts
+CREATE POLICY "Users can view event_video_starts in their organization" ON event_video_starts
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s
             WHERE s.id = session_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
 
 -- event_video_views: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_video_views" ON event_video_views
+CREATE POLICY "Users can view event_video_views in their organization" ON event_video_views
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s
             WHERE s.id = session_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
 
 -- event_clicks: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_clicks" ON event_clicks
+CREATE POLICY "Users can view event_clicks in their organization" ON event_clicks
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s
             WHERE s.id = session_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
 
 -- event_conversions: セッション経由で確認（読み取りのみ）
-CREATE POLICY "Users can select own org event_conversions" ON event_conversions
+CREATE POLICY "Users can view event_conversions in their organization" ON event_conversions
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM sessions s
             WHERE s.id = session_id
             AND is_my_organization_project(s.project_id)
+            AND is_organization_active()
         )
     );
-
--- =============================================================================
--- Triggers
--- =============================================================================
-
--- ユーザー作成時に profiles レコードを自動作成
--- 注意: organization_id は設定しない（運営が手動で設定）
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- organization_id を NULL で INSERT しようとするとエラーになる
-    -- 初期運用では、ユーザー作成前に organization を作成し、
-    -- ユーザー作成後に手動で profiles.organization_id を設定する
-    -- または、招待フローで organization_id を指定する仕組みを実装する
-
-    -- 現時点ではトリガーでは profiles を作成しない
-    -- アプリケーション側で organization_id と共に作成する
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
-
--- updated_at を自動更新するトリガー関数
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- 各テーブルに updated_at トリガーを設定
-CREATE TRIGGER update_organizations_updated_at
-    BEFORE UPDATE ON organizations
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_profiles_updated_at
-    BEFORE UPDATE ON profiles
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_projects_updated_at
-    BEFORE UPDATE ON projects
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_videos_updated_at
-    BEFORE UPDATE ON videos
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_slots_updated_at
-    BEFORE UPDATE ON slots
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_conversion_rules_updated_at
-    BEFORE UPDATE ON conversion_rules
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
