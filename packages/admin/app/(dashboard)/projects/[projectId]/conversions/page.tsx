@@ -13,13 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -64,8 +58,6 @@ import {
   Pencil,
   Trash2,
   AlertCircle,
-  Eye,
-  MousePointer,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -170,12 +162,6 @@ export default function ConversionsPage() {
   }, [loadData])
 
   const canEdit = userRole === 'owner' || userRole === 'admin'
-
-  const getSlotName = (slotId: string | null) => {
-    if (!slotId) return null
-    const slot = slots.find((s) => s.id === slotId)
-    return slot?.name || 'Unknown Slot'
-  }
 
   const handleCreate = async () => {
     setCreateError(null)
@@ -364,21 +350,19 @@ export default function ConversionsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                {createType === 'url_match' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="pattern">URL Pattern (optional)</Label>
-                    <Input
-                      id="pattern"
-                      placeholder="e.g., /signup or https://example.com/buy"
-                      value={createUrlPattern}
-                      onChange={(e) => setCreateUrlPattern(e.target.value)}
-                      disabled={isCreating}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Track clicks that navigate to URLs matching this pattern
-                    </p>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="pattern">URL Pattern</Label>
+                  <Input
+                    id="pattern"
+                    placeholder="e.g., /signup or https://example.com/buy"
+                    value={createUrlPattern}
+                    onChange={(e) => setCreateUrlPattern(e.target.value)}
+                    disabled={isCreating}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Track clicks that navigate to URLs matching this pattern
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button
