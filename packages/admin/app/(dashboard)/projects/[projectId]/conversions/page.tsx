@@ -69,15 +69,14 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-type ConversionType = 'click' | 'video_view'
+type ConversionType = 'url_match' | 'url_contains' | 'url_regex'
 
 interface ConversionRuleType {
   id: string
   project_id: string
   name: string
-  conversion_type: ConversionType
-  target_slot_id: string | null
-  target_url_pattern: string | null
+  rule_type: ConversionType
+  rule_value: string | null
   created_at: string
   updated_at: string
 }
@@ -110,7 +109,7 @@ export default function ConversionsPage() {
   // Create state
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createName, setCreateName] = useState('')
-  const [createType, setCreateType] = useState<ConversionType>('click')
+  const [createType, setCreateType] = useState<ConversionType>('url_match')
   const [createSlotId, setCreateSlotId] = useState<string>('')
   const [createUrlPattern, setCreateUrlPattern] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
@@ -186,12 +185,16 @@ export default function ConversionsPage() {
       return
     }
 
-    if (createType === 'video_view' && !createSlotId) {
-      setCreateError('Please select a slot for video view tracking')
+    if (createType === 'url_regex' && !createSlotId) {
+      setCreateError('Please select a slot for URL regex tracking')
       return
     }
 
-    if (createType === 'click' && !createUrlPattern.trim() && !createSlotId) {
+    if (
+      createType === 'url_match' &&
+      !createUrlPattern.trim() &&
+      !createSlotId
+    ) {
       setCreateError('Please specify a URL pattern or select a slot')
       return
     }
@@ -206,9 +209,8 @@ export default function ConversionsPage() {
         .insert({
           project_id: projectId,
           name: createName.trim(),
-          conversion_type: createType,
-          target_slot_id: createSlotId || null,
-          target_url_pattern: createUrlPattern.trim() || null,
+          rule_type: createType,
+          rule_value: createUrlPattern.trim() || null,
         })
         .select()
         .single()
@@ -356,34 +358,13 @@ export default function ConversionsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="click">Button Click</SelectItem>
-                      <SelectItem value="video_view">
-                        Video View (80%+)
-                      </SelectItem>
+                      <SelectItem value="url_match">URL Match</SelectItem>
+                      <SelectItem value="url_contains">URL Contains</SelectItem>
+                      <SelectItem value="url_regex">URL Regex</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Target Slot (optional)</Label>
-                  <Select
-                    value={createSlotId}
-                    onValueChange={setCreateSlotId}
-                    disabled={isCreating}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any slot" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Any slot</SelectItem>
-                      {slots.map((slot) => (
-                        <SelectItem key={slot.id} value={slot.id}>
-                          {slot.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {createType === 'click' && (
+                {createType === 'url_match' && (
                   <div className="space-y-2">
                     <Label htmlFor="pattern">URL Pattern (optional)</Label>
                     <Input
@@ -431,7 +412,6 @@ export default function ConversionsPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Target</TableHead>
                 <TableHead>Created</TableHead>
                 {canEdit && <TableHead className="w-12" />}
               </TableRow>
@@ -442,23 +422,10 @@ export default function ConversionsPage() {
                   <TableCell className="font-medium">{rule.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {rule.conversion_type === 'click' ? (
-                        <>
-                          <MousePointer className="mr-1 h-3 w-3" />
-                          Click
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="mr-1 h-3 w-3" />
-                          Video View
-                        </>
-                      )}
+                      {rule.rule_type === 'url_match' && 'URL Match'}
+                      {rule.rule_type === 'url_contains' && 'URL Contains'}
+                      {rule.rule_type === 'url_regex' && 'URL Regex'}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {rule.target_slot_id
-                      ? getSlotName(rule.target_slot_id)
-                      : rule.target_url_pattern || 'Any'}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(rule.created_at).toLocaleDateString()}
