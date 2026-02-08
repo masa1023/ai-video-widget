@@ -8,9 +8,5 @@
     "build:admin": "pnpm --filter admin build",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
-  },
-  "devDependencies": {
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.2"
   }
 }
