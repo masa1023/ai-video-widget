@@ -98,54 +98,54 @@ auth.users (Supabase Auth)
         └── projects (プロジェクト)
 ```
 
-- 1ユーザー = 1組織に所属（シンプル構造）
+- 1ユーザー = 1組織に所属
 - 1組織 = 複数プロジェクト
-- role は `owner`, `admin`, `viewer` の enum（当面は `owner` のみ使用）
+- role: `owner`, `admin`, `viewer`
 
-### 初期運用フロー（招待ベース）
+### 新規登録フロー（組織作成）
 
-1. **組織作成**（運営が Supabase Dashboard で実行）
+1. **サインアップ画面 (`/signup`)**
+   - 入力: メールアドレス, パスワード, 組織名 (`organization.name`), 組織ID (`organization.id`)
+   - 組織IDはURL等で使用される一意の識別子（英数字）
 
-   ```sql
-   INSERT INTO organizations (name) VALUES ('株式会社サンプル');
-   ```
+2. **アカウント作成処理**
+   - 組織IDの重複チェック
+   - `auth.users` 作成
+   - `organizations` 作成（`status: 'inactive'`）
+   - `profiles` 作成（`role: 'owner'`, `organization_id` 紐付け）
 
-2. **ユーザー招待**（Supabase Dashboard の Auth → Users → Invite）
-   - メールアドレスを入力
-   - 招待メールが送信される
+3. **利用開始（有効化）**
+   - 運営が Supabase Dashboard で `organizations.status` を `'active'` に更新
+   - ステータスが `inactive` の組織に所属するユーザーはログイン不可（または待機画面表示）
 
-3. **profiles レコード作成**（運営が Supabase Dashboard で実行）
+### メンバー管理（招待フロー）
 
-   ```sql
-   INSERT INTO profiles (id, organization_id, email, display_name, role)
-   VALUES (
-       '[auth.users の id]',
-       '[organizations の id]',
-       'user@example.com',
-       '山田太郎',
-       'owner'
-   );
-   ```
+#### ページ: `/settings/members`
 
-4. **ユーザーがパスワード設定**
-   - 招待メールのリンクをクリック
-   - パスワードを設定してログイン
+- **機能**: 組織内メンバーの一覧表示、招待、削除
+- **権限**: `owner` のみアクセス可能
 
-### 将来の改善案
+#### 招待フロー
 
-- 管理画面からの招待機能実装
-- 組織内メンバー管理 UI
-- セルフサインアップ + 組織作成フロー
+1. **招待実行**
+   - Owner がメールアドレスと権限（`admin` 等）を入力して送信
+   - システムが `auth.users` に `invite` アクションを実行（Supabase Auth 機能）
+   - `profiles` レコードを仮作成
+
+2. **招待受諾**
+   - 招待メールのリンクからパスワード設定画面へ
+   - パスワード設定完了後、ログイン
+   - 招待された組織に所属する状態で利用開始
 
 ### RLS によるアクセス制御
 
-| テーブル            | アクセス範囲                                     |
-| ------------------- | ------------------------------------------------ |
-| profiles            | 自分のレコードのみ                               |
-| organizations       | 自分の組織のみ                                   |
-| projects            | 自分の組織のプロジェクトのみ                     |
-| videos, slots, etc. | 自分の組織のプロジェクト配下のみ                 |
-| sessions, event\_\* | 自分の組織のプロジェクト配下のみ（読み取りのみ） |
+| テーブル            | アクセス範囲                                         |
+| ------------------- | ---------------------------------------------------- |
+| profiles            | 自分のレコードのみ                                   |
+| organizations       | 自分の組織のみ（`status = 'active'` のチェック推奨） |
+| projects            | 自分の組織のプロジェクトのみ                         |
+| videos, slots, etc. | 自分の組織のプロジェクト配下のみ                     |
+| sessions, event\_\* | 自分の組織のプロジェクト配下のみ（読み取りのみ）     |
 
 ---
 
@@ -499,50 +499,6 @@ service_role キーを使用（環境変数から取得）。
 | FileUpload     | ファイルアップロード                               |
 | CopyButton     | クリップボードコピー                               |
 
-### 推奨
+### デザインシステム
 
 - shadcn/ui と Tailwind CSS を使用
-
----
-
-## 環境変数
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# App
-NEXT_PUBLIC_APP_URL=
-```
-
----
-
-## 実装優先順位
-
-### Phase 1: 基盤
-
-1. Supabase クライアント設定
-2. 認証（ログイン/ログアウト）
-3. 認証ミドルウェア
-4. 基本レイアウト（サイドバー）
-
-### Phase 2: コア機能
-
-1. プロジェクト一覧・詳細
-2. 動画アップロード・一覧
-3. スロット CRUD
-4. 遷移設定
-
-### Phase 3: 分析・API
-
-1. ウィジェット用 API（config, events）
-2. 分析ダッシュボード
-3. CV ルール管理
-
-### Phase 4: 改善
-
-1. グラフビュー（スロット遷移の可視化）
-2. メンバー管理
-3. ログ・監査機能
