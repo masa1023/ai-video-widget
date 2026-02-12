@@ -82,13 +82,14 @@ CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    domain TEXT,  -- 例: "example.com"（オプション）
+    allowed_origins TEXT[],  -- ウィジェット埋め込み許可オリジン
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_projects_organization_id ON projects(organization_id);
 CREATE INDEX idx_projects_domain ON projects(domain);
+CREATE INDEX idx_projects_allowed_origins ON projects(allowed_origins);
 ```
 
 ### videos

@@ -1,8 +1,9 @@
+import { Database } from '@/lib/supabase/database.types'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Use service role for widget API to bypass RLS
-const supabaseAdmin = createClient(
+const supabaseAdmin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -36,7 +37,7 @@ export async function GET(
     }
 
     // Check organization is active
-    const org = project.organizations[0]
+    const org = project.organizations
     if (org.status !== 'active') {
       return NextResponse.json(
         { error: 'Project not available' },
@@ -45,10 +46,7 @@ export async function GET(
     }
 
     // Check origin is allowed (skip in development)
-    if (
-      process.env.NODE_ENV === 'production' &&
-      project.allowed_origins?.length > 0
-    ) {
+    if (process.env.NODE_ENV === 'production' && project.allowed_origins) {
       const originAllowed = project.allowed_origins.some((allowed: string) => {
         try {
           const allowedUrl = new URL(allowed)
@@ -109,37 +107,43 @@ export async function GET(
       transitions = transitionsData || []
     }
 
-    // Get public URLs for videos
-    const slotsWithUrls = await Promise.all(
-      (slots || []).map(async (slot) => {
-        const video = slot.videos[0] || null
+    // Build slot response with public video URLs
+    const slotsWithUrls = (slots || []).map((slot) => {
+      // slots.video_id is a FK to videos, so Supabase returns an object (not array)
+      const video = slot.videos as unknown as {
+        id: string
+        title: string
+        video_url: string
+        duration_seconds: number
+      } | null
 
-        let videoUrl = null
-        if (video.video_url) {
-          const { data: signedData } = await supabaseAdmin.storage
-            .from('videos')
-            .createSignedUrl(video.video_url, 3600) // 1 hour
+      let videoUrl = null
+      if (video?.video_url) {
+        const { data } = supabaseAdmin.storage
+          .from('videos')
+          .getPublicUrl(video.video_url)
 
-          videoUrl = signedData?.signedUrl || null
-        }
+        videoUrl = data?.publicUrl || null
+      }
 
-        return {
-          id: slot.id,
-          name: slot.title,
-          isEntryPoint: slot.is_entry_point,
-          detailButtonText: slot.detail_button_text,
-          detailButtonUrl: slot.detail_button_url,
-          ctaButtonText: slot.cta_button_text,
-          ctaButtonUrl: slot.cta_button_url,
-          video: {
-            id: video.id,
-            title: video.title,
-            url: videoUrl,
-            durationSeconds: video.duration_seconds,
-          },
-        }
-      })
-    )
+      return {
+        id: slot.id,
+        name: slot.title,
+        isEntryPoint: slot.is_entry_point,
+        detailButtonText: slot.detail_button_text,
+        detailButtonUrl: slot.detail_button_url,
+        ctaButtonText: slot.cta_button_text,
+        ctaButtonUrl: slot.cta_button_url,
+        video: video
+          ? {
+              id: video.id,
+              title: video.title,
+              url: videoUrl,
+              durationSeconds: video.duration_seconds,
+            }
+          : null,
+      }
+    })
 
     // Find entry point
     const entrySlot = slotsWithUrls.find((s) => s.isEntryPoint)

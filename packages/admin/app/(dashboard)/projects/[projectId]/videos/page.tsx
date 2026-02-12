@@ -136,8 +136,8 @@ export default function VideosPage() {
 
   const canEdit = userRole === 'owner' || userRole === 'admin'
 
-  const formatDuration = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
+  const formatDuration = (totalSeconds: number) => {
+    const seconds = Math.floor(totalSeconds)
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
@@ -258,7 +258,7 @@ export default function VideosPage() {
       video.preload = 'metadata'
       video.onloadedmetadata = () => {
         URL.revokeObjectURL(video.src)
-        resolve(Math.round(video.duration * 1000))
+        resolve(Math.round(video.duration))
       }
       video.onerror = () => {
         resolve(0)
