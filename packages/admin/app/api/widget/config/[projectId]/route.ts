@@ -36,7 +36,7 @@ export async function GET(
     }
 
     // Check organization is active
-    const org = project.organizations as { status: string }
+    const org = project.organizations[0]
     if (org.status !== 'active') {
       return NextResponse.json(
         { error: 'Project not available' },
@@ -73,16 +73,17 @@ export async function GET(
       .select(
         `
         id,
-        name,
+        title,
         is_entry_point,
-        button_type,
-        button_label,
-        button_url,
+        detail_button_text,
+        detail_button_url,
+        cta_button_text,
+        cta_button_url,
         videos (
           id,
           title,
-          storage_path,
-          duration_ms
+          video_url,
+          duration_seconds
         )
       `
       )
@@ -111,37 +112,31 @@ export async function GET(
     // Get public URLs for videos
     const slotsWithUrls = await Promise.all(
       (slots || []).map(async (slot) => {
-        const video = slot.videos as {
-          id: string
-          title: string
-          storage_path: string
-          duration_ms: number
-        } | null
+        const video = slot.videos[0] || null
 
         let videoUrl = null
-        if (video?.storage_path) {
+        if (video.video_url) {
           const { data: signedData } = await supabaseAdmin.storage
             .from('videos')
-            .createSignedUrl(video.storage_path, 3600) // 1 hour
+            .createSignedUrl(video.video_url, 3600) // 1 hour
 
           videoUrl = signedData?.signedUrl || null
         }
 
         return {
           id: slot.id,
-          name: slot.name,
+          name: slot.title,
           isEntryPoint: slot.is_entry_point,
-          buttonType: slot.button_type,
-          buttonLabel: slot.button_label,
-          buttonUrl: slot.button_url,
-          video: video
-            ? {
-                id: video.id,
-                title: video.title,
-                url: videoUrl,
-                durationMs: video.duration_ms,
-              }
-            : null,
+          detailButtonText: slot.detail_button_text,
+          detailButtonUrl: slot.detail_button_url,
+          ctaButtonText: slot.cta_button_text,
+          ctaButtonUrl: slot.cta_button_url,
+          video: {
+            id: video.id,
+            title: video.title,
+            url: videoUrl,
+            durationSeconds: video.duration_seconds,
+          },
         }
       })
     )
@@ -151,7 +146,7 @@ export async function GET(
 
     const config = {
       projectId,
-      entrySlotId: entrySlot?.id || slotsWithUrls[0]?.id || null,
+      entrySlotId: entrySlot?.id || null,
       slots: slotsWithUrls,
       transitions: transitions.map((t) => ({
         fromSlotId: t.from_slot_id,
