@@ -120,18 +120,9 @@ export default function AnalyticsPage() {
     // Calculate date range
     const daysAgo = new Date()
     daysAgo.setDate(daysAgo.getDate() - parseInt(period))
+    const sinceDate = daysAgo.toISOString()
 
-    // Get sessions for this project in the period
-    const { data: sessions } = await supabase
-      .from('sessions')
-      .select('id')
-      .eq('project_id', projectId)
-      .gte('created_at', daysAgo.toISOString())
-
-    const sessionIds = sessions?.map((s) => s.id) || []
-    const safeSessionIds = sessionIds.length > 0 ? sessionIds : ['none']
-
-    // Get all event counts
+    // Get all event counts filtered by project_id directly
     const [
       widgetOpensResult,
       videoStartsResult,
@@ -143,27 +134,33 @@ export default function AnalyticsPage() {
       supabase
         .from('event_widget_opens')
         .select('id', { count: 'exact', head: true })
-        .in('session_id', safeSessionIds),
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
       supabase
         .from('event_video_starts')
         .select('id, slot_id', { count: 'exact' })
-        .in('session_id', safeSessionIds),
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
       supabase
         .from('event_video_views')
         .select('id, slot_id', { count: 'exact' })
-        .in('session_id', safeSessionIds),
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
       supabase
         .from('event_clicks')
-        .select('id, slot_id, button_type', { count: 'exact' })
-        .in('session_id', safeSessionIds),
+        .select('id, slot_id, click_type', { count: 'exact' })
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
       supabase
         .from('event_conversions')
         .select('id', { count: 'exact', head: true })
-        .in('session_id', safeSessionIds),
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
       supabase
         .from('event_clicks')
-        .select('button_type')
-        .in('session_id', safeSessionIds),
+        .select('click_type')
+        .eq('project_id', projectId)
+        .gte('created_at', sinceDate),
     ])
 
     const widgetOpens = widgetOpensResult.count || 0
@@ -200,7 +197,7 @@ export default function AnalyticsPage() {
     // Calculate click breakdown
     const clickCounts: Record<string, number> = {}
     clicksByTypeResult.data?.forEach((click) => {
-      const type = click.button_type
+      const type = click.click_type
       clickCounts[type] = (clickCounts[type] || 0) + 1
     })
 

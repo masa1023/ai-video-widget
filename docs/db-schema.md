@@ -199,11 +199,13 @@ CREATE INDEX idx_sessions_created_at ON sessions(created_at);
 ```sql
 CREATE TABLE event_widget_opens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     referrer TEXT,  -- ウィジェットを開いたページのURL
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_event_widget_opens_project_id ON event_widget_opens(project_id);
 CREATE INDEX idx_event_widget_opens_session_id ON event_widget_opens(session_id);
 CREATE INDEX idx_event_widget_opens_created_at ON event_widget_opens(created_at);
 ```
@@ -215,12 +217,14 @@ CREATE INDEX idx_event_widget_opens_created_at ON event_widget_opens(created_at)
 ```sql
 CREATE TABLE event_video_starts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_event_video_starts_project_id ON event_video_starts(project_id);
 CREATE INDEX idx_event_video_starts_session_id ON event_video_starts(session_id);
 CREATE INDEX idx_event_video_starts_video_id ON event_video_starts(video_id);
 CREATE INDEX idx_event_video_starts_slot_id ON event_video_starts(slot_id);
@@ -234,6 +238,7 @@ CREATE INDEX idx_event_video_starts_created_at ON event_video_starts(created_at)
 ```sql
 CREATE TABLE event_video_views (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
@@ -242,6 +247,7 @@ CREATE TABLE event_video_views (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_event_video_views_project_id ON event_video_views(project_id);
 CREATE INDEX idx_event_video_views_session_id ON event_video_views(session_id);
 CREATE INDEX idx_event_video_views_video_id ON event_video_views(video_id);
 CREATE INDEX idx_event_video_views_slot_id ON event_video_views(slot_id);
@@ -255,6 +261,7 @@ CREATE INDEX idx_event_video_views_created_at ON event_video_views(created_at);
 ```sql
 CREATE TABLE event_clicks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
@@ -265,6 +272,7 @@ CREATE TABLE event_clicks (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_event_clicks_project_id ON event_clicks(project_id);
 CREATE INDEX idx_event_clicks_session_id ON event_clicks(session_id);
 CREATE INDEX idx_event_clicks_slot_id ON event_clicks(slot_id);
 CREATE INDEX idx_event_clicks_click_type ON event_clicks(click_type);
@@ -278,6 +286,7 @@ CV達成イベント。
 ```sql
 CREATE TABLE event_conversions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     conversion_rule_id UUID NOT NULL REFERENCES conversion_rules(id) ON DELETE CASCADE,
     last_video_start_id UUID REFERENCES event_video_starts(id) ON DELETE SET NULL,  -- 直近の動画再生
@@ -285,6 +294,7 @@ CREATE TABLE event_conversions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_event_conversions_project_id ON event_conversions(project_id);
 CREATE INDEX idx_event_conversions_session_id ON event_conversions(session_id);
 CREATE INDEX idx_event_conversions_conversion_rule_id ON event_conversions(conversion_rule_id);
 CREATE INDEX idx_event_conversions_created_at ON event_conversions(created_at);

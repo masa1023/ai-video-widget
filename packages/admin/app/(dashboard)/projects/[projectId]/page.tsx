@@ -72,36 +72,28 @@ export default async function ProjectOverviewPage({
   // Get 30-day metrics
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-  // Get sessions for this project in the last 30 days
-  const { data: sessions } = await supabase
-    .from('sessions')
-    .select('id')
-    .eq('project_id', projectId)
-    .gte('created_at', thirtyDaysAgo.toISOString())
-
-  const sessionIds = sessions?.map((s) => s.id) || []
+  const sinceDate = thirtyDaysAgo.toISOString()
 
   // Get widget opens
   const { count: widgetOpens } = await supabase
     .from('event_widget_opens')
     .select('id', { count: 'exact', head: true })
-    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
-    .gte('created_at', thirtyDaysAgo.toISOString())
+    .eq('project_id', projectId)
+    .gte('created_at', sinceDate)
 
   // Get video starts
   const { count: videoStarts } = await supabase
     .from('event_video_starts')
     .select('id', { count: 'exact', head: true })
-    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
-    .gte('created_at', thirtyDaysAgo.toISOString())
+    .eq('project_id', projectId)
+    .gte('created_at', sinceDate)
 
   // Get clicks
   const { count: clicks } = await supabase
     .from('event_clicks')
     .select('id', { count: 'exact', head: true })
-    .in('session_id', sessionIds.length > 0 ? sessionIds : ['none'])
-    .gte('created_at', thirtyDaysAgo.toISOString())
+    .eq('project_id', projectId)
+    .gte('created_at', sinceDate)
 
   // Generate embed script
   const embedScript = `<script src="https://widget.bonsaivideo.com/embed.js" data-project-id="${projectId}" async></script>`

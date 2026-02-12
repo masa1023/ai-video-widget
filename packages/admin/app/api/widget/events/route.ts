@@ -31,7 +31,6 @@ interface BaseEventPayload {
   project_id: string
   session_id: string
   event_type: EventType
-  timestamp?: string
 }
 
 interface WidgetOpenPayload extends BaseEventPayload {
@@ -115,8 +114,6 @@ export async function POST(request: NextRequest) {
       console.error('Session upsert error:', sessionError)
     }
 
-    const timestamp = payload.timestamp || new Date().toISOString()
-
     // Insert event based on type
     switch (payload.event_type) {
       case 'widget_open': {
@@ -126,10 +123,7 @@ export async function POST(request: NextRequest) {
           .insert({
             project_id: widgetPayload.project_id,
             session_id: widgetPayload.session_id,
-            page_url: widgetPayload.page_url,
             referrer: widgetPayload.referrer || null,
-            user_agent: widgetPayload.user_agent || null,
-            opened_at: timestamp,
           })
 
         if (error) {
@@ -157,7 +151,6 @@ export async function POST(request: NextRequest) {
             project_id: videoStartPayload.project_id,
             session_id: videoStartPayload.session_id,
             slot_id: videoStartPayload.slot_id,
-            started_at: timestamp,
           })
 
         if (error) {
@@ -186,8 +179,8 @@ export async function POST(request: NextRequest) {
           project_id: videoViewPayload.project_id,
           session_id: videoViewPayload.session_id,
           slot_id: videoViewPayload.slot_id,
-          watch_seconds: videoViewPayload.watch_seconds,
-          viewed_at: timestamp,
+          played_seconds: videoViewPayload.watch_seconds,
+          duration_seconds: 0, // TODO: resolve from slot's video
         })
 
         if (error) {
@@ -217,10 +210,9 @@ export async function POST(request: NextRequest) {
           project_id: clickPayload.project_id,
           session_id: clickPayload.session_id,
           slot_id: clickPayload.slot_id,
-          button_label: clickPayload.button_label,
-          button_type: clickPayload.button_type,
-          destination_url: clickPayload.destination_url || null,
-          clicked_at: timestamp,
+          target_label: clickPayload.button_label,
+          click_type: clickPayload.button_type,
+          target_url: clickPayload.destination_url || null,
         })
 
         if (error) {
@@ -245,9 +237,7 @@ export async function POST(request: NextRequest) {
         const { error } = await supabaseAdmin.from('event_conversions').insert({
           project_id: conversionPayload.project_id,
           session_id: conversionPayload.session_id,
-          rule_id: conversionPayload.rule_id,
-          slot_id: conversionPayload.slot_id || null,
-          converted_at: timestamp,
+          conversion_rule_id: conversionPayload.rule_id,
         })
 
         if (error) {
