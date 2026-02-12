@@ -7,8 +7,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.jsx',
       name: 'VideoWidget',
-      // fileName: 'video-widget',
-      fileName: 'video-widget-degipro',
+      fileName: 'video-widget',
       formats: ['iife'],
     },
     rollupOptions: {

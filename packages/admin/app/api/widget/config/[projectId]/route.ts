@@ -128,7 +128,7 @@ export async function GET(
 
       return {
         id: slot.id,
-        name: slot.title,
+        title: slot.title,
         isEntryPoint: slot.is_entry_point,
         detailButtonText: slot.detail_button_text,
         detailButtonUrl: slot.detail_button_url,
