@@ -70,12 +70,26 @@ function VideoWidget({ config }) {
     <div class={`video-widget ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded ? (
         <div class="widget-circle" onClick={handleCircleClick}>
+          {config.thumbnailUrl && (
+            <img
+              class="circle-thumbnail"
+              src={config.thumbnailUrl}
+              alt=""
+            />
+          )}
           <div class="circle-play-icon">
             <Play fill="black" />
           </div>
         </div>
       ) : (
-        <div class="video-container">
+        <div
+          class="video-container"
+          style={config.backgroundUrl ? {
+            backgroundImage: `url(${config.backgroundUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          } : {}}
+        >
           <div class="video-header">
             <div class="progress-bar-container">
               <div class="progress-bar-bg">

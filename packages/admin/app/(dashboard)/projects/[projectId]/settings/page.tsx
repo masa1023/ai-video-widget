@@ -39,11 +39,20 @@ export default function ProjectSettingsPage() {
   const [project, setProject] = useState<{
     id: string
     name: string
+    organization_id: string
     allowed_origins: string[]
+    thumbnail_url: string | null
+    background_url: string | null
   } | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [origins, setOrigins] = useState<string[]>([''])
+  const [thumbnailPath, setThumbnailPath] = useState<string | null>(null)
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [backgroundPath, setBackgroundPath] = useState<string | null>(null)
+  const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null)
+  const [backgroundFile, setBackgroundFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -92,6 +101,23 @@ export default function ProjectSettingsPage() {
         ? projectData.allowed_origins
         : ['']
     )
+    setThumbnailPath(projectData.thumbnail_url)
+    setBackgroundPath(projectData.background_url)
+
+    // Set image previews from existing storage paths
+    if (projectData.thumbnail_url) {
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(projectData.thumbnail_url)
+      setThumbnailPreview(data?.publicUrl || null)
+    }
+    if (projectData.background_url) {
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(projectData.background_url)
+      setBackgroundPreview(data?.publicUrl || null)
+    }
+
     setIsLoading(false)
   }
 
@@ -107,6 +133,59 @@ export default function ProjectSettingsPage() {
     const newOrigins = [...origins]
     newOrigins[index] = value
     setOrigins(newOrigins)
+  }
+
+  function handleImageSelect(
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'thumbnail' | 'background'
+  ) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image must be under 10MB')
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    if (type === 'thumbnail') {
+      setThumbnailFile(file)
+      setThumbnailPreview(previewUrl)
+    } else {
+      setBackgroundFile(file)
+      setBackgroundPreview(previewUrl)
+    }
+  }
+
+  function handleImageRemove(type: 'thumbnail' | 'background') {
+    if (type === 'thumbnail') {
+      setThumbnailFile(null)
+      setThumbnailPreview(null)
+      setThumbnailPath(null)
+    } else {
+      setBackgroundFile(null)
+      setBackgroundPreview(null)
+      setBackgroundPath(null)
+    }
+  }
+
+  async function uploadImage(
+    supabase: ReturnType<typeof createClient>,
+    file: File,
+    organizationId: string
+  ): Promise<string | null> {
+    const ext = file.name.split('.').pop()
+    const fileName = `${organizationId}/${projectId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(fileName, file, { cacheControl: '3600', upsert: false })
+
+    if (error) {
+      console.error('Failed to upload image:', error)
+      return null
+    }
+    return fileName
   }
 
   async function handleSave() {
@@ -135,12 +214,56 @@ export default function ProjectSettingsPage() {
 
     try {
       const supabase = createClient()
+      const organizationId = project!.organization_id
+
+      let newThumbnailPath = thumbnailPath
+      let newBackgroundPath = backgroundPath
+
+      // Upload new thumbnail if selected
+      if (thumbnailFile) {
+        const path = await uploadImage(supabase, thumbnailFile, organizationId)
+        if (!path) {
+          setError('Failed to upload thumbnail image')
+          setIsSaving(false)
+          return
+        }
+        // Delete old thumbnail
+        if (project?.thumbnail_url) {
+          await supabase.storage.from('images').remove([project.thumbnail_url])
+        }
+        newThumbnailPath = path
+      }
+
+      // Upload new background if selected
+      if (backgroundFile) {
+        const path = await uploadImage(supabase, backgroundFile, organizationId)
+        if (!path) {
+          setError('Failed to upload background image')
+          setIsSaving(false)
+          return
+        }
+        // Delete old background
+        if (project?.background_url) {
+          await supabase.storage.from('images').remove([project.background_url])
+        }
+        newBackgroundPath = path
+      }
+
+      // Delete removed images from storage
+      if (!newThumbnailPath && project?.thumbnail_url) {
+        await supabase.storage.from('images').remove([project.thumbnail_url])
+      }
+      if (!newBackgroundPath && project?.background_url) {
+        await supabase.storage.from('images').remove([project.background_url])
+      }
 
       const { error: updateError } = await supabase
         .from('projects')
         .update({
           name: name.trim(),
           allowed_origins: validOrigins,
+          thumbnail_url: newThumbnailPath,
+          background_url: newBackgroundPath,
         })
         .eq('id', projectId)
 
@@ -150,6 +273,8 @@ export default function ProjectSettingsPage() {
         return
       }
 
+      setThumbnailFile(null)
+      setBackgroundFile(null)
       toast.success('Project settings saved')
       router.refresh()
     } catch (err) {
@@ -281,6 +406,88 @@ export default function ProjectSettingsPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <Label>Thumbnail Image</Label>
+              <p className="text-sm text-muted-foreground">
+                Shown in the collapsed widget circle
+              </p>
+            </div>
+            {thumbnailPreview ? (
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail preview"
+                    className="h-20 w-20 rounded-full border object-cover"
+                  />
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white"
+                      onClick={() => handleImageRemove('thumbnail')}
+                      disabled={isSaving}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : canEdit ? (
+              <Input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => handleImageSelect(e, 'thumbnail')}
+                disabled={isSaving}
+                className="cursor-pointer"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">No thumbnail set</p>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <Label>Background Image</Label>
+              <p className="text-sm text-muted-foreground">
+                Shown behind the video player when expanded
+              </p>
+            </div>
+            {backgroundPreview ? (
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={backgroundPreview}
+                    alt="Background preview"
+                    className="h-28 w-16 rounded border object-cover"
+                  />
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white"
+                      onClick={() => handleImageRemove('background')}
+                      disabled={isSaving}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : canEdit ? (
+              <Input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => handleImageSelect(e, 'background')}
+                disabled={isSaving}
+                className="cursor-pointer"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No background image set
+              </p>
+            )}
           </div>
         </CardContent>
         {canEdit && (
