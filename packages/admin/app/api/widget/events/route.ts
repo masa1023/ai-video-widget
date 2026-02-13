@@ -29,15 +29,13 @@ type EventType =
 
 interface BaseEventPayload {
   project_id: string
-  session_id: string
+  session_id?: string
   event_type: EventType
 }
 
 interface WidgetOpenPayload extends BaseEventPayload {
   event_type: 'widget_open'
-  page_url: string
   referrer?: string
-  user_agent?: string
 }
 
 interface VideoStartPayload extends BaseEventPayload {
@@ -72,16 +70,51 @@ type EventPayload =
   | ClickPayload
   | ConversionPayload
 
+/**
+ * セッションの検証または新規作成
+ * - session_id あり → DB で存在 & project_id 一致を確認
+ * - 不一致 or 未提供 → 新規セッション作成
+ */
+async function validateOrCreateSession(
+  projectId: string,
+  sessionId?: string
+): Promise<{ sessionId: string; isNew: boolean }> {
+  // session_id が提供された場合、DB で検証
+  if (sessionId) {
+    const { data: existing } = await supabaseAdmin
+      .from('sessions')
+      .select('id')
+      .eq('id', sessionId)
+      .eq('project_id', projectId)
+      .single()
+
+    if (existing) {
+      return { sessionId: existing.id, isNew: false }
+    }
+  }
+
+  // 新規セッション作成
+  const { data: newSession, error } = await supabaseAdmin
+    .from('sessions')
+    .insert({ project_id: projectId })
+    .select('id')
+    .single()
+
+  if (error || !newSession) {
+    throw new Error(`Failed to create session: ${error?.message}`)
+  }
+
+  return { sessionId: newSession.id, isNew: true }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload: EventPayload = await request.json()
 
     // Validate required fields
-    if (!payload.project_id || !payload.session_id || !payload.event_type) {
+    if (!payload.project_id || !payload.event_type) {
       return NextResponse.json(
-        {
-          error: 'Missing required fields: project_id, session_id, event_type',
-        },
+        { error: 'Missing required fields: project_id, event_type' },
         { status: 400, headers: corsHeaders }
       )
     }
@@ -100,18 +133,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Upsert session (create or update last_active_at)
-    const { error: sessionError } = await supabaseAdmin.from('sessions').upsert(
-      {
-        id: payload.session_id,
-        project_id: payload.project_id,
-        last_active_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    )
-
-    if (sessionError) {
-      console.error('Session upsert error:', sessionError)
+    // Validate or create session
+    let validSessionId: string
+    let isNewSession = false
+    try {
+      const result = await validateOrCreateSession(
+        payload.project_id,
+        payload.session_id
+      )
+      validSessionId = result.sessionId
+      isNewSession = result.isNew
+    } catch (err) {
+      console.error('Session validation error:', err)
+      return NextResponse.json(
+        { error: 'Failed to validate session' },
+        { status: 500, headers: corsHeaders }
+      )
     }
 
     // Insert event based on type
@@ -122,7 +159,7 @@ export async function POST(request: NextRequest) {
           .from('event_widget_opens')
           .insert({
             project_id: widgetPayload.project_id,
-            session_id: widgetPayload.session_id,
+            session_id: validSessionId,
             referrer: widgetPayload.referrer || null,
           })
 
@@ -149,7 +186,7 @@ export async function POST(request: NextRequest) {
           .from('event_video_starts')
           .insert({
             project_id: videoStartPayload.project_id,
-            session_id: videoStartPayload.session_id,
+            session_id: validSessionId,
             slot_id: videoStartPayload.slot_id,
           })
 
@@ -177,7 +214,7 @@ export async function POST(request: NextRequest) {
 
         const { error } = await supabaseAdmin.from('event_video_views').insert({
           project_id: videoViewPayload.project_id,
-          session_id: videoViewPayload.session_id,
+          session_id: validSessionId,
           slot_id: videoViewPayload.slot_id,
           played_seconds: videoViewPayload.watch_seconds,
           duration_seconds: 0, // TODO: resolve from slot's video
@@ -208,7 +245,7 @@ export async function POST(request: NextRequest) {
 
         const { error } = await supabaseAdmin.from('event_clicks').insert({
           project_id: clickPayload.project_id,
-          session_id: clickPayload.session_id,
+          session_id: validSessionId,
           slot_id: clickPayload.slot_id,
           target_label: clickPayload.button_label,
           click_type: clickPayload.button_type,
@@ -236,7 +273,7 @@ export async function POST(request: NextRequest) {
 
         const { error } = await supabaseAdmin.from('event_conversions').insert({
           project_id: conversionPayload.project_id,
-          session_id: conversionPayload.session_id,
+          session_id: validSessionId,
           conversion_rule_id: conversionPayload.rule_id,
         })
 
@@ -258,7 +295,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true },
+      { success: true, ...(isNewSession ? { session_id: validSessionId } : {}) },
       { status: 200, headers: corsHeaders }
     )
   } catch (error) {
