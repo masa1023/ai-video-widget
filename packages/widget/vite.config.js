@@ -7,7 +7,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.jsx',
       name: 'VideoWidget',
-      fileName: 'video-widget',
+      fileName: () => 'embed.js',
       formats: ['iife'],
     },
     rollupOptions: {

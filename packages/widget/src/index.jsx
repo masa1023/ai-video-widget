@@ -237,16 +237,15 @@ function VideoWidget({ config }) {
 }
 
 async function init() {
-  // Get projectId and apiUrl from script tag or env vars
+  // Get projectId from script tag or env var, apiUrl from env var (baked in at build time)
   const scriptTag = document.querySelector('script[data-project-id]')
   const projectId =
     scriptTag?.getAttribute('data-project-id') ||
     import.meta.env.VITE_PROJECT_ID
-  const apiUrl =
-    scriptTag?.getAttribute('data-api-url') || import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL
 
   if (!projectId || !apiUrl) {
-    console.error('[BonsAI Video] Missing data-project-id or data-api-url')
+    console.error('[BonsAI Video] Missing data-project-id or VITE_API_URL')
     return
   }
 
