@@ -4,7 +4,39 @@ import ReactPlayer from 'react-player'
 import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
 
-function VideoWidget({ config }) {
+function getSessionId(projectId) {
+  try {
+    return localStorage.getItem(`bonsai_session_${projectId}`)
+  } catch {
+    return null
+  }
+}
+
+function setSessionId(projectId, sessionId) {
+  try {
+    localStorage.setItem(`bonsai_session_${projectId}`, sessionId)
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+async function sendEvent(apiUrl, payload) {
+  try {
+    const res = await fetch(`${apiUrl}/api/widget/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch {
+    // Silently fail — event logging should not break the widget
+  }
+  return null
+}
+
+function VideoWidget({ config, apiUrl }) {
   const playerRef = useRef(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -19,9 +51,20 @@ function VideoWidget({ config }) {
     .filter((t) => t.fromSlotId === currentSlotId)
     .map((t) => t.toSlotId)
 
-  const handleCircleClick = () => {
+  const handleCircleClick = async () => {
     setIsExpanded(true)
     setIsPlaying(true)
+
+    const sessionId = getSessionId(config.projectId)
+    const result = await sendEvent(apiUrl, {
+      project_id: config.projectId,
+      event_type: 'widget_open',
+      referrer: window.location.href,
+      ...(sessionId ? { session_id: sessionId } : {}),
+    })
+    if (result?.session_id) {
+      setSessionId(config.projectId, result.session_id)
+    }
   }
 
   const handleClose = (e) => {
@@ -272,7 +315,7 @@ async function init() {
     style.textContent = styles
 
     shadow.appendChild(style)
-    render(<VideoWidget config={config} />, shadow)
+    render(<VideoWidget config={config} apiUrl={apiUrl} />, shadow)
   } catch (err) {
     console.error('[BonsAI Video] Failed to initialize:', err)
   }
