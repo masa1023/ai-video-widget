@@ -71,11 +71,7 @@ function VideoWidget({ config }) {
       {!isExpanded ? (
         <div class="widget-circle" onClick={handleCircleClick}>
           {config.thumbnailUrl && (
-            <img
-              class="circle-thumbnail"
-              src={config.thumbnailUrl}
-              alt=""
-            />
+            <img class="circle-thumbnail" src={config.thumbnailUrl} alt="" />
           )}
           <div class="circle-play-icon">
             <Play fill="black" />
@@ -84,11 +80,15 @@ function VideoWidget({ config }) {
       ) : (
         <div
           class="video-container"
-          style={config.backgroundUrl ? {
-            backgroundImage: `url(${config.backgroundUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          } : {}}
+          style={
+            config.backgroundUrl
+              ? {
+                  backgroundImage: `url(${config.backgroundUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : {}
+          }
         >
           <div class="video-header">
             <div class="progress-bar-container">
@@ -221,9 +221,7 @@ function VideoWidget({ config }) {
               {currentSlot.ctaButtonText && currentSlot.ctaButtonUrl && (
                 <button
                   class="cta-button"
-                  onClick={() =>
-                    handleExternalLink(currentSlot.ctaButtonUrl)
-                  }
+                  onClick={() => handleExternalLink(currentSlot.ctaButtonUrl)}
                 >
                   {currentSlot.ctaButtonText}
                   <ExternalLink size={18} />
@@ -240,15 +238,12 @@ function VideoWidget({ config }) {
 
 async function init() {
   // Get projectId and apiUrl from script tag or env vars
-  const scriptTag = document.querySelector(
-    'script[data-project-id]'
-  )
+  const scriptTag = document.querySelector('script[data-project-id]')
   const projectId =
     scriptTag?.getAttribute('data-project-id') ||
     import.meta.env.VITE_PROJECT_ID
   const apiUrl =
-    scriptTag?.getAttribute('data-api-url') ||
-    import.meta.env.VITE_API_URL
+    scriptTag?.getAttribute('data-api-url') || import.meta.env.VITE_API_URL
 
   if (!projectId || !apiUrl) {
     console.error('[BonsAI Video] Missing data-project-id or data-api-url')
