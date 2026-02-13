@@ -155,8 +155,8 @@ CREATE TABLE event_video_starts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
-    video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
+    slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
+    video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -173,10 +173,9 @@ CREATE TABLE event_video_views (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
-    video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
+    slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
+    video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     played_seconds FLOAT NOT NULL, -- Actual played duration in seconds
-    duration_seconds FLOAT NOT NULL, -- Total duration of the video
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -193,8 +192,8 @@ CREATE TABLE event_clicks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
-    video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
+    slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
+    video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     click_type TEXT NOT NULL,  -- 'cta', 'detail', 'transition'
     target_label TEXT,  -- ボタンのラベル
     target_url TEXT,  -- クリック先URL（CTAや詳細ボタンの場合）
@@ -216,7 +215,6 @@ CREATE TABLE event_conversions (
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     conversion_rule_id UUID NOT NULL REFERENCES conversion_rules(id) ON DELETE CASCADE,
-    last_video_start_id UUID REFERENCES event_video_starts(id) ON DELETE SET NULL,  -- 直近の動画再生
     matched_url TEXT,  -- CV条件にマッチしたURL
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

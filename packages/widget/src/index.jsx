@@ -1,5 +1,5 @@
 import { render } from 'preact'
-import { useRef, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
@@ -36,6 +36,17 @@ async function sendEvent(apiUrl, payload) {
   return null
 }
 
+function sendEventBeacon(apiUrl, payload) {
+  try {
+    const blob = new Blob([JSON.stringify(payload)], {
+      type: 'application/json',
+    })
+    navigator.sendBeacon(`${apiUrl}/api/widget/events`, blob)
+  } catch {
+    // Silently fail
+  }
+}
+
 function VideoWidget({ config, apiUrl }) {
   const playerRef = useRef(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -45,11 +56,55 @@ function VideoWidget({ config, apiUrl }) {
   const [currentSubtitle, setCurrentSubtitle] = useState('')
   const [historyStack, setHistoryStack] = useState([config.entrySlotId])
   const [isMuted, setIsMuted] = useState(false)
+  const playStartTimeRef = useRef(null)
 
   const currentSlot = config.slots.find((s) => s.id === currentSlotId)
   const nextSlotIds = config.transitions
     .filter((t) => t.fromSlotId === currentSlotId)
     .map((t) => t.toSlotId)
+
+  const buildEventPayload = (extra) => {
+    const sessionId = getSessionId(config.projectId)
+    return {
+      project_id: config.projectId,
+      ...(sessionId ? { session_id: sessionId } : {}),
+      ...extra,
+    }
+  }
+
+  const sendVideoView = (slotId, useBeacon = false) => {
+    if (playStartTimeRef.current === null) return
+    const currentTime = playerRef.current?.currentTime ?? 0
+    const playedSeconds = currentTime - playStartTimeRef.current
+    playStartTimeRef.current = null
+    if (playedSeconds <= 0) return
+
+    const payload = buildEventPayload({
+      event_type: 'video_view',
+      slot_id: slotId,
+      video_id: currentSlot.video.id,
+      played_seconds: playedSeconds,
+    })
+    if (useBeacon) {
+      sendEventBeacon(apiUrl, payload)
+    } else {
+      sendEvent(apiUrl, payload)
+    }
+  }
+
+  const handlePlay = () => {
+    playStartTimeRef.current = playerRef.current?.currentTime ?? 0
+    const payload = buildEventPayload({
+      event_type: 'video_start',
+      slot_id: currentSlotId,
+      video_id: currentSlot.video.id,
+    })
+    sendEvent(apiUrl, payload)
+  }
+
+  const handlePause = () => {
+    sendVideoView(currentSlotId)
+  }
 
   const handleCircleClick = async () => {
     setIsExpanded(true)
@@ -106,6 +161,22 @@ function VideoWidget({ config, apiUrl }) {
   const handleExternalLink = (url) => {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
+
+  // Send video_view via sendBeacon when page is hidden (close/navigate away)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'hidden' &&
+        playStartTimeRef.current !== null
+      ) {
+        sendVideoView(currentSlotId, true)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [currentSlotId])
 
   if (!currentSlot || !currentSlot.video) return null
 
@@ -194,7 +265,10 @@ function VideoWidget({ config, apiUrl }) {
             playsInline={true}
             width="100%"
             height="100%"
+            onPlaying={handlePlay}
+            onPause={handlePause}
             onEnded={() => {
+              sendVideoView(currentSlotId)
               setIsPlaying(false)
             }}
             onTimeUpdate={handleTimeUpdate}

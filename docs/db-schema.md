@@ -244,7 +244,6 @@ CREATE TABLE event_video_views (
     slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,
     video_id UUID REFERENCES videos(id) ON DELETE SET NULL,
     played_seconds FLOAT NOT NULL,  -- 再生時間（秒）
-    duration_seconds FLOAT NOT NULL,  -- 動画の長さ（秒）
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -290,7 +289,6 @@ CREATE TABLE event_conversions (
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     conversion_rule_id UUID NOT NULL REFERENCES conversion_rules(id) ON DELETE CASCADE,
-    last_video_start_id UUID REFERENCES event_video_starts(id) ON DELETE SET NULL,  -- 直近の動画再生
     matched_url TEXT,  -- CV条件にマッチしたURL
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

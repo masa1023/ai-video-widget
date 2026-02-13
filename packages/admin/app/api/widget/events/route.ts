@@ -41,12 +41,14 @@ interface WidgetOpenPayload extends BaseEventPayload {
 interface VideoStartPayload extends BaseEventPayload {
   event_type: 'video_start'
   slot_id: string
+  video_id: string
 }
 
 interface VideoViewPayload extends BaseEventPayload {
   event_type: 'video_view'
   slot_id: string
-  watch_seconds: number
+  video_id: string
+  played_seconds: number
 }
 
 interface ClickPayload extends BaseEventPayload {
@@ -175,9 +177,9 @@ export async function POST(request: NextRequest) {
 
       case 'video_start': {
         const videoStartPayload = payload as VideoStartPayload
-        if (!videoStartPayload.slot_id) {
+        if (!videoStartPayload.slot_id || !videoStartPayload.video_id) {
           return NextResponse.json(
-            { error: 'Missing slot_id for video_start event' },
+            { error: 'Missing required fields for video_start event' },
             { status: 400, headers: corsHeaders }
           )
         }
@@ -188,6 +190,7 @@ export async function POST(request: NextRequest) {
             project_id: videoStartPayload.project_id,
             session_id: validSessionId,
             slot_id: videoStartPayload.slot_id,
+            video_id: videoStartPayload.video_id,
           })
 
         if (error) {
@@ -204,10 +207,13 @@ export async function POST(request: NextRequest) {
         const videoViewPayload = payload as VideoViewPayload
         if (
           !videoViewPayload.slot_id ||
-          videoViewPayload.watch_seconds === undefined
+          !videoViewPayload.video_id ||
+          videoViewPayload.played_seconds === undefined
         ) {
           return NextResponse.json(
-            { error: 'Missing slot_id or watch_seconds for video_view event' },
+            {
+              error: 'Missing required fields for video_view event',
+            },
             { status: 400, headers: corsHeaders }
           )
         }
@@ -216,8 +222,9 @@ export async function POST(request: NextRequest) {
           project_id: videoViewPayload.project_id,
           session_id: validSessionId,
           slot_id: videoViewPayload.slot_id,
-          played_seconds: videoViewPayload.watch_seconds,
-          duration_seconds: 0, // TODO: resolve from slot's video
+          video_id: videoViewPayload.video_id,
+          played_seconds: videoViewPayload.played_seconds,
+          duration_seconds: 0, // Deprecated field, set to 0
         })
 
         if (error) {
@@ -295,7 +302,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, ...(isNewSession ? { session_id: validSessionId } : {}) },
+      {
+        success: true,
+        ...(isNewSession ? { session_id: validSessionId } : {}),
+      },
       { status: 200, headers: corsHeaders }
     )
   } catch (error) {
