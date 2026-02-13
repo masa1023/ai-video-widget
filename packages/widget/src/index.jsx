@@ -3,24 +3,21 @@ import { useRef, useState } from 'preact/hooks'
 import ReactPlayer from 'react-player'
 import { ExternalLink, Volume2, VolumeX, Play } from 'lucide-react'
 import styles from './style.css?inline'
-import { videoConfig } from './video-config/degipro.js'
-import { navigationGraph, rootNodeId } from './navigation-graph/degipro.js'
-// import { videoConfig } from './video-config/aloop.js'
-// import { navigationGraph, rootNodeId } from './navigation-graph/aloop.js'
 
-function VideoWidget() {
+function VideoWidget({ config }) {
   const playerRef = useRef(null)
-  const thumbnailRef = useRef(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [currentNodeId, setCurrentNodeId] = useState(rootNodeId)
+  const [currentSlotId, setCurrentSlotId] = useState(config.entrySlotId)
   const [currentSubtitle, setCurrentSubtitle] = useState('')
-  const [historyStack, setHistoryStack] = useState([rootNodeId])
+  const [historyStack, setHistoryStack] = useState([config.entrySlotId])
   const [isMuted, setIsMuted] = useState(false)
 
-  const currentNode = navigationGraph[currentNodeId]
-  const currentVideo = videoConfig.find((v) => v.id === currentNode.videoId)
+  const currentSlot = config.slots.find((s) => s.id === currentSlotId)
+  const nextSlotIds = config.transitions
+    .filter((t) => t.fromSlotId === currentSlotId)
+    .map((t) => t.toSlotId)
 
   const handleCircleClick = () => {
     setIsExpanded(true)
@@ -42,20 +39,11 @@ function VideoWidget() {
       current: { currentTime, duration },
     } = playerRef
     setProgress((currentTime / duration) * 100)
-
-    // Update subtitles based on current time
-    const subtitles = currentVideo.subtitles || []
-    const activeSubtitle = subtitles.find(
-      (subtitle) => currentTime >= subtitle.start && currentTime <= subtitle.end
-    )
-    if (activeSubtitle) {
-      setCurrentSubtitle(activeSubtitle.text)
-    }
   }
 
-  const handleVideoSelect = (nodeId) => {
-    setHistoryStack([...historyStack, nodeId])
-    setCurrentNodeId(nodeId)
+  const handleSlotSelect = (slotId) => {
+    setHistoryStack([...historyStack, slotId])
+    setCurrentSlotId(slotId)
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -66,7 +54,7 @@ function VideoWidget() {
 
     const newStack = historyStack.slice(0, -1)
     setHistoryStack(newStack)
-    setCurrentNodeId(newStack[newStack.length - 1])
+    setCurrentSlotId(newStack[newStack.length - 1])
     setProgress(0)
     setCurrentSubtitle('')
     setIsPlaying(true)
@@ -76,17 +64,15 @@ function VideoWidget() {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
+  if (!currentSlot || !currentSlot.video) return null
+
   return (
     <div class={`video-widget ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded ? (
         <div class="widget-circle" onClick={handleCircleClick}>
-          <img
-            ref={thumbnailRef}
-            class="circle-thumbnail"
-            src={`${import.meta.env.VITE_BASE_URL}degipro/video-thumbnail.png`}
-            // src={`${import.meta.env.VITE_BASE_URL}aloop/video-thumbnail.png`}
-            alt="Video thumbnail"
-          />
+          {config.thumbnailUrl && (
+            <img class="circle-thumbnail" src={config.thumbnailUrl} alt="" />
+          )}
           <div class="circle-play-icon">
             <Play fill="black" />
           </div>
@@ -94,12 +80,15 @@ function VideoWidget() {
       ) : (
         <div
           class="video-container"
-          style={{
-            backgroundImage: `url(${import.meta.env.VITE_BASE_URL}degipro/video-background.png)`,
-            // backgroundImage: `url(${import.meta.env.VITE_BASE_URL}aloop/video-background.png)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+          style={
+            config.backgroundUrl
+              ? {
+                  backgroundImage: `url(${config.backgroundUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : {}
+          }
         >
           <div class="video-header">
             <div class="progress-bar-container">
@@ -156,7 +145,7 @@ function VideoWidget() {
           </div>
           <ReactPlayer
             ref={playerRef}
-            src={currentVideo.videoUrl}
+            src={currentSlot.video.url}
             playing={isPlaying}
             controls={false}
             playsInline={true}
@@ -200,43 +189,41 @@ function VideoWidget() {
               </div>
             )}
             <div class="button-container">
-              {currentNode.nextNodeIds.length > 0 && (
+              {nextSlotIds.length > 0 && (
                 <div class="next-videos-section">
-                  {currentNode.nextNodeIds.map((nextNodeId) => {
-                    const video = videoConfig.find(
-                      (v) => v.id === navigationGraph[nextNodeId].videoId
+                  {nextSlotIds.map((nextSlotId) => {
+                    const nextSlot = config.slots.find(
+                      (s) => s.id === nextSlotId
                     )
-                    return video ? (
+                    return nextSlot ? (
                       <button
-                        key={nextNodeId}
+                        key={nextSlotId}
                         class="next-video-button"
-                        onClick={() => handleVideoSelect(nextNodeId)}
+                        onClick={() => handleSlotSelect(nextSlotId)}
                       >
-                        {video.title}
+                        {nextSlot.title}
                       </button>
                     ) : null
                   })}
                 </div>
               )}
-              {currentVideo.detailButton && (
+              {currentSlot.detailButtonText && currentSlot.detailButtonUrl && (
                 <button
                   class="detail-button"
                   onClick={() =>
-                    handleExternalLink(currentVideo.detailButton.link)
+                    handleExternalLink(currentSlot.detailButtonUrl)
                   }
                 >
-                  {currentVideo.detailButton.text}
+                  {currentSlot.detailButtonText}
                   <ExternalLink size={18} />
                 </button>
               )}
-              {currentVideo.ctaButton && (
+              {currentSlot.ctaButtonText && currentSlot.ctaButtonUrl && (
                 <button
                   class="cta-button"
-                  onClick={() =>
-                    handleExternalLink(currentVideo.ctaButton.link)
-                  }
+                  onClick={() => handleExternalLink(currentSlot.ctaButtonUrl)}
                 >
-                  {currentVideo.ctaButton.text}
+                  {currentSlot.ctaButtonText}
                   <ExternalLink size={18} />
                 </button>
               )}
@@ -249,17 +236,47 @@ function VideoWidget() {
   )
 }
 
-function init() {
-  const container = document.createElement('div')
-  document.body.appendChild(container)
+async function init() {
+  // Get projectId and apiUrl from script tag or env vars
+  const scriptTag = document.querySelector('script[data-project-id]')
+  const projectId =
+    scriptTag?.getAttribute('data-project-id') ||
+    import.meta.env.VITE_PROJECT_ID
+  const apiUrl =
+    scriptTag?.getAttribute('data-api-url') || import.meta.env.VITE_API_URL
 
-  const shadow = container.attachShadow({ mode: 'closed' })
+  if (!projectId || !apiUrl) {
+    console.error('[BonsAI Video] Missing data-project-id or data-api-url')
+    return
+  }
 
-  const style = document.createElement('style')
-  style.textContent = styles
+  try {
+    const res = await fetch(`${apiUrl}/api/widget/config/${projectId}`)
+    if (!res.ok) {
+      console.error('[BonsAI Video] Failed to load config:', res.status)
+      return
+    }
 
-  shadow.appendChild(style)
-  render(<VideoWidget />, shadow)
+    const config = await res.json()
+
+    if (!config.entrySlotId || !config.slots?.length) {
+      console.error('[BonsAI Video] Invalid config: no entry slot or slots')
+      return
+    }
+
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const shadow = container.attachShadow({ mode: 'closed' })
+
+    const style = document.createElement('style')
+    style.textContent = styles
+
+    shadow.appendChild(style)
+    render(<VideoWidget config={config} />, shadow)
+  } catch (err) {
+    console.error('[BonsAI Video] Failed to initialize:', err)
+  }
 }
 
 if (typeof window !== 'undefined') {

@@ -96,7 +96,7 @@ export default async function ProjectOverviewPage({
     .gte('created_at', sinceDate)
 
   // Generate embed script
-  const embedScript = `<script src="https://widget.bonsaivideo.com/embed.js" data-project-id="${projectId}" async></script>`
+  const embedScript = `<script src="https://widget.bonsai-video.com/embed.js" data-project-id="${projectId}" async></script>`
 
   return (
     <div className="space-y-6">

@@ -1,8 +1,8 @@
 -- Bonsai Video Storage Configuration
--- This script creates storage buckets and policies for video files
+-- This script creates storage buckets and policies for video and image files
 
 -- =============================================================================
--- CREATE STORAGE BUCKET
+-- CREATE STORAGE BUCKETS
 -- =============================================================================
 
 -- Create videos bucket for storing uploaded video files
@@ -19,8 +19,22 @@ ON CONFLICT (id) DO UPDATE SET
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types;
 
+-- Create images bucket for storing thumbnail and background images
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'images',
+    'images',
+    true,  -- Public access for widget display
+    10485760,  -- 10MB limit
+    ARRAY['image/png', 'image/jpeg', 'image/webp']::text[]
+)
+ON CONFLICT (id) DO UPDATE SET
+    public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
 -- =============================================================================
--- STORAGE POLICIES
+-- VIDEOS BUCKET POLICIES
 -- =============================================================================
 
 -- Public read access for video playback (widget needs this)
@@ -52,6 +66,45 @@ CREATE POLICY "videos_bucket_update" ON storage.objects
 CREATE POLICY "videos_bucket_delete" ON storage.objects
     FOR DELETE USING (
         bucket_id = 'videos'
+        AND auth.role() = 'authenticated'
+        AND (storage.foldername(name))[1]::uuid = get_user_organization_id()
+        AND is_organization_active()
+        AND can_edit()
+    );
+
+-- =============================================================================
+-- IMAGES BUCKET POLICIES
+-- =============================================================================
+
+-- Public read access for image display (widget needs this)
+CREATE POLICY "images_bucket_select" ON storage.objects
+    FOR SELECT USING (bucket_id = 'images');
+
+-- Authenticated users can upload images to their organization's folder
+-- Path format: {organization_id}/{project_id}/{filename}
+CREATE POLICY "images_bucket_insert" ON storage.objects
+    FOR INSERT WITH CHECK (
+        bucket_id = 'images'
+        AND auth.role() = 'authenticated'
+        AND (storage.foldername(name))[1]::uuid = get_user_organization_id()
+        AND is_organization_active()
+        AND can_edit()
+    );
+
+-- Authenticated users can update their organization's images
+CREATE POLICY "images_bucket_update" ON storage.objects
+    FOR UPDATE USING (
+        bucket_id = 'images'
+        AND auth.role() = 'authenticated'
+        AND (storage.foldername(name))[1]::uuid = get_user_organization_id()
+        AND is_organization_active()
+        AND can_edit()
+    );
+
+-- Authenticated users can delete their organization's images
+CREATE POLICY "images_bucket_delete" ON storage.objects
+    FOR DELETE USING (
+        bucket_id = 'images'
         AND auth.role() = 'authenticated'
         AND (storage.foldername(name))[1]::uuid = get_user_organization_id()
         AND is_organization_active()

@@ -83,12 +83,13 @@ CREATE TABLE projects (
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     allowed_origins TEXT[],  -- ウィジェット埋め込み許可オリジン
+    thumbnail_url TEXT,       -- サムネイル画像（縮小サークル表示用）のストレージパス
+    background_url TEXT,      -- 背景画像（展開時の動画背景）のストレージパス
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_projects_organization_id ON projects(organization_id);
-CREATE INDEX idx_projects_domain ON projects(domain);
 CREATE INDEX idx_projects_allowed_origins ON projects(allowed_origins);
 ```
 
@@ -397,6 +398,7 @@ CREATE POLICY "Service role full access" ON [table_name]
 
 ## 備考
 
+- **ストレージ**: `videos` バケット（動画ファイル）と `images` バケット（サムネイル・背景画像）。いずれも public アクセス。パス形式: `{organization_id}/{project_id}/{filename}`
 - **字幕**: 静的ファイル（VTT等）で管理。DBには保存しない。
 - **セッション有効期限**: アプリケーションレベルで `created_at + 540日` で判定。
 - **CV検知**: ウィジェットがページ遷移を監視し、`conversion_rules` の条件と照合してイベント送信。

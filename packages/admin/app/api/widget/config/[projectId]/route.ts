@@ -24,6 +24,8 @@ export async function GET(
         id,
         name,
         allowed_origins,
+        thumbnail_url,
+        background_url,
         organizations!inner (
           status
         )
@@ -128,7 +130,7 @@ export async function GET(
 
       return {
         id: slot.id,
-        name: slot.title,
+        title: slot.title,
         isEntryPoint: slot.is_entry_point,
         detailButtonText: slot.detail_button_text,
         detailButtonUrl: slot.detail_button_url,
@@ -145,12 +147,31 @@ export async function GET(
       }
     })
 
+    // Resolve project image URLs
+    let thumbnailUrl = null
+    if (project.thumbnail_url) {
+      const { data } = supabaseAdmin.storage
+        .from('images')
+        .getPublicUrl(project.thumbnail_url)
+      thumbnailUrl = data?.publicUrl || null
+    }
+
+    let backgroundUrl = null
+    if (project.background_url) {
+      const { data } = supabaseAdmin.storage
+        .from('images')
+        .getPublicUrl(project.background_url)
+      backgroundUrl = data?.publicUrl || null
+    }
+
     // Find entry point
     const entrySlot = slotsWithUrls.find((s) => s.isEntryPoint)
 
     const config = {
       projectId,
       entrySlotId: entrySlot?.id || null,
+      thumbnailUrl,
+      backgroundUrl,
       slots: slotsWithUrls,
       transitions: transitions.map((t) => ({
         fromSlotId: t.from_slot_id,

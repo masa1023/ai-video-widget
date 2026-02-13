@@ -40,6 +40,8 @@ CREATE TABLE projects (
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     allowed_origins TEXT[],
+    thumbnail_url TEXT,       -- サムネイル画像（縮小サークル表示用）のストレージパス
+    background_url TEXT,      -- 背景画像（展開時の動画背景）のストレージパス
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

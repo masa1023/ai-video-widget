@@ -381,26 +381,32 @@ export type Database = {
       projects: {
         Row: {
           allowed_origins: string[] | null
+          background_url: string | null
           created_at: string
           id: string
           name: string
           organization_id: string
+          thumbnail_url: string | null
           updated_at: string
         }
         Insert: {
           allowed_origins?: string[] | null
+          background_url?: string | null
           created_at?: string
           id?: string
           name: string
           organization_id: string
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Update: {
           allowed_origins?: string[] | null
+          background_url?: string | null
           created_at?: string
           id?: string
           name?: string
           organization_id?: string
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Relationships: [
