@@ -71,7 +71,6 @@ CREATE TABLE slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
-    slot_key TEXT NOT NULL,  -- 例: "node-1", "opening"
     title TEXT,  -- 管理用タイトル
     is_entry_point BOOLEAN NOT NULL DEFAULT FALSE,  -- 開始ノードかどうか
     -- ボタン設定
@@ -82,8 +81,7 @@ CREATE TABLE slots (
     position_x FLOAT DEFAULT 0,
     position_y FLOAT DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (project_id, slot_key)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_slots_project_id ON slots(project_id);

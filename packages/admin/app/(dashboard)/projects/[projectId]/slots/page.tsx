@@ -117,7 +117,7 @@ export default function SlotsPage() {
       .insert({
         project_id: projectId,
         video_id: slot.video_id!,
-        slot_key: slot.name!,
+        title: slot.name!,
         is_entry_point: slot.is_entry_point || false,
         detail_button_text: 'TEXT',
         detail_button_url: 'TEXT',
