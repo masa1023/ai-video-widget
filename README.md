@@ -38,14 +38,14 @@ pnpm install
 # Start all packages in development mode
 pnpm dev
 
+# Start specific package in development mode
+pnpm dev:widget
+pnpm dev:admin
+
 # Build all packages
 pnpm build
 
 # Build specific package
 pnpm build:widget
 pnpm build:admin
-
-# Code formatting
-pnpm format         # Format all files
-pnpm format:check   # Check formatting
 ```
