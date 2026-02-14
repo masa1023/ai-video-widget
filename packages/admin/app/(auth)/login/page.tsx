@@ -4,8 +4,7 @@ import React from 'react'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signIn, type AuthActionResult } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,7 +21,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -35,67 +33,24 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
+      const formData = new FormData()
+      formData.set('email', email)
+      formData.set('password', password)
 
-      const { data, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
+      const result: AuthActionResult = await signIn(formData)
 
-      if (signInError) {
-        setError(signInError.message)
+      // signIn redirects on success, so we only reach here on error
+      if (result.error) {
+        setError(result.error)
         setIsLoading(false)
-        return
       }
-
-      if (!data.user) {
-        setError('Login failed. Please try again.')
-        setIsLoading(false)
-        return
-      }
-
-      // Check if user has a profile and organization
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('organization_id, organizations(status)')
-        .eq('id', data.user.id)
-        .single()
-
-      if (profileError || !profile) {
-        setError('Account setup incomplete. Please contact support.')
-        await supabase.auth.signOut()
-        setIsLoading(false)
-        return
-      }
-
-      // Check organization status
-      const orgStatus = (profile.organizations as { status: string } | null)
-        ?.status
-      if (orgStatus !== 'active') {
-        if (orgStatus === 'inactive') {
-          setError(
-            'Your organization is not yet activated. Please wait for activation.'
-          )
-        } else if (orgStatus === 'suspended') {
-          setError(
-            'Your organization has been suspended. Please contact support.'
-          )
-        } else {
-          setError(
-            'Unable to access your organization. Please contact support.'
-          )
-        }
-        await supabase.auth.signOut()
-        setIsLoading(false)
-        return
-      }
-
-      router.push('/dashboard')
-      router.refresh()
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
-      setIsLoading(false)
+      // redirect() from server action throws a NEXT_REDIRECT error — this is expected
+      // If it's an actual error, show it
+      if (err instanceof Error && err.message !== 'NEXT_REDIRECT') {
+        setError('An unexpected error occurred. Please try again.')
+        setIsLoading(false)
+      }
     }
   }
 

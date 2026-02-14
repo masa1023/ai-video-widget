@@ -4,8 +4,7 @@ import React from 'react'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signUp, type AuthActionResult } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,7 +21,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
 export default function SignupPage() {
-  const router = useRouter()
   const [organizationName, setOrganizationName] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -61,30 +59,16 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
+      const formData = new FormData()
+      formData.set('email', email)
+      formData.set('password', password)
+      formData.set('organizationName', organizationName)
+      formData.set('displayName', displayName)
 
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/dashboard`,
-          data: {
-            organization_name: organizationName,
-            display_name: displayName,
-          },
-        },
-      })
+      const result: AuthActionResult = await signUp(formData)
 
-      if (signUpError) {
-        setError(signUpError.message)
-        setIsLoading(false)
-        return
-      }
-
-      if (!data.user) {
-        setError('Sign up failed. Please try again.')
+      if (result.error) {
+        setError(result.error)
         setIsLoading(false)
         return
       }
