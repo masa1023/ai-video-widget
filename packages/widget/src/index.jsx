@@ -37,6 +37,7 @@ async function sendEvent(apiUrl, payload) {
 }
 
 function sendEventBeacon(apiUrl, payload) {
+  console.log('Sending beacon event:', payload)
   try {
     const blob = new Blob([JSON.stringify(payload)], {
       type: 'application/json',
@@ -195,20 +196,19 @@ function VideoWidget({ config, apiUrl }) {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
-  // Send video_view via sendBeacon when page is hidden (close/navigate away)
+  // Send video_view via sendBeacon when page is unloaded (tab close / navigate away)
+  // pagehide はタブ閉じ・ページ遷移時のみ発火（タブ切り替えでは発火しない）
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        const hasUnsent =
-          playStartTimeRef.current !== null || accumulatedSecondsRef.current > 0
-        if (hasUnsent) {
-          sendVideoView(currentSlotId, true)
-        }
+    const handlePageHide = () => {
+      const hasUnsent =
+        playStartTimeRef.current !== null || accumulatedSecondsRef.current > 0
+      if (hasUnsent) {
+        sendVideoView(currentSlotId, true)
       }
     }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('pagehide', handlePageHide)
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('pagehide', handlePageHide)
     }
   }, [currentSlotId])
 

@@ -112,6 +112,7 @@ async function validateOrCreateSession(
 export async function POST(request: NextRequest) {
   try {
     const payload: EventPayload = await request.json()
+    console.log('Received widget event payload:', payload)
 
     // Validate required fields
     if (!payload.project_id || !payload.event_type) {
