@@ -11,9 +11,8 @@ interface VideoType {
   id: string
   project_id: string
   title: string
-  storage_path: string
-  thumbnail_path: string | null
-  duration_ms: number
+  video_url: string
+  duration_seconds: number | null
   created_at: string
   updated_at: string
 }
@@ -22,15 +21,17 @@ interface SlotType {
   id: string
   project_id: string
   video_id: string
-  name: string
+  title: string | null
   is_entry_point: boolean
-  button_type: 'cta' | 'detail' | 'transition'
-  button_label: string
-  button_url: string | null
-  position_x: number
-  position_y: number
+  cta_button_text: string | null
+  cta_button_url: string | null
+  detail_button_text: string | null
+  detail_button_url: string | null
+  position_x: number | null
+  position_y: number | null
   created_at: string
   updated_at: string
+  video: VideoType
 }
 
 interface TransitionType {
@@ -71,7 +72,7 @@ export default function SlotsPage() {
 
     setUserRole(profile?.role || null)
 
-    // Get videos
+    // Get videos (for create slot dialog)
     const { data: videosData } = await supabase
       .from('videos')
       .select('*')
@@ -80,14 +81,14 @@ export default function SlotsPage() {
 
     setVideos(videosData || [])
 
-    // Get slots
+    // Get slots with joined video
     const { data: slotsData } = await supabase
       .from('slots')
-      .select('*')
+      .select('*, video:videos!inner(*)')
       .eq('project_id', projectId)
       .order('created_at')
 
-    setSlots(slotsData || [])
+    setSlots((slotsData as unknown as SlotType[]) || [])
 
     // Get transitions
     if (slotsData && slotsData.length > 0) {
@@ -117,16 +118,12 @@ export default function SlotsPage() {
       .insert({
         project_id: projectId,
         video_id: slot.video_id!,
-        title: slot.name!,
+        title: slot.title!,
         is_entry_point: slot.is_entry_point || false,
-        detail_button_text: 'TEXT',
-        detail_button_url: 'TEXT',
-        cta_button_text: 'TEXT',
-        cta_button_url: 'TEXT',
         position_x: slot.position_x || 0,
         position_y: slot.position_y || 0,
       })
-      .select('*')
+      .select('*, video:videos!inner(*)')
       .single()
 
     if (error) {
@@ -134,9 +131,9 @@ export default function SlotsPage() {
       return null
     }
 
-    setSlots([...slots, data])
+    setSlots([...slots, data as unknown as SlotType])
     toast.success('Slot created')
-    return data
+    return data as unknown as SlotType
   }
 
   const handleSlotUpdate = async (id: string, updates: Partial<SlotType>) => {
@@ -151,7 +148,12 @@ export default function SlotsPage() {
         .neq('id', id)
     }
 
-    const { error } = await supabase.from('slots').update(updates).eq('id', id)
+    // Exclude video from updates (it's a joined field)
+    const { video, ...dbUpdates } = updates
+    const { error } = await supabase
+      .from('slots')
+      .update(dbUpdates)
+      .eq('id', id)
 
     if (error) {
       toast.error(error.message)

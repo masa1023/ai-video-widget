@@ -40,7 +40,7 @@ export default function ProjectSettingsPage() {
     id: string
     name: string
     organization_id: string
-    allowed_origins: string[]
+    allowed_origins: string[] | null
     thumbnail_url: string | null
     background_url: string | null
   } | null>(null)
@@ -97,7 +97,7 @@ export default function ProjectSettingsPage() {
     setProject(projectData)
     setName(projectData.name)
     setOrigins(
-      projectData.allowed_origins?.length > 0
+      projectData.allowed_origins && projectData.allowed_origins.length > 0
         ? projectData.allowed_origins
         : ['']
     )

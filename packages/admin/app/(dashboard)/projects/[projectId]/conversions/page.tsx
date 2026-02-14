@@ -61,14 +61,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-type ConversionType = 'url_match' | 'url_contains' | 'url_regex'
-
 interface ConversionRuleType {
   id: string
   project_id: string
   name: string
-  rule_type: ConversionType
-  rule_value: string | null
+  rule_type: string
+  rule_value: string
+  attribution_days: number
   created_at: string
   updated_at: string
 }
@@ -77,13 +76,14 @@ interface SlotType {
   id: string
   project_id: string
   video_id: string
-  name: string
+  title: string | null
   is_entry_point: boolean
-  button_type: 'cta' | 'detail' | 'transition'
-  button_label: string
-  button_url: string | null
-  position_x: number
-  position_y: number
+  cta_button_text: string | null
+  cta_button_url: string | null
+  detail_button_text: string | null
+  detail_button_url: string | null
+  position_x: number | null
+  position_y: number | null
   created_at: string
   updated_at: string
 }
@@ -101,7 +101,7 @@ export default function ConversionsPage() {
   // Create state
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createName, setCreateName] = useState('')
-  const [createType, setCreateType] = useState<ConversionType>('url_match')
+  const [createType, setCreateType] = useState<string>('url_match')
   const [createSlotId, setCreateSlotId] = useState<string>('')
   const [createUrlPattern, setCreateUrlPattern] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
@@ -196,7 +196,7 @@ export default function ConversionsPage() {
           project_id: projectId,
           name: createName.trim(),
           rule_type: createType,
-          rule_value: createUrlPattern.trim() || null,
+          rule_value: createUrlPattern.trim(),
         })
         .select()
         .single()
@@ -209,7 +209,7 @@ export default function ConversionsPage() {
       setRules([data, ...rules])
       setIsCreateOpen(false)
       setCreateName('')
-      setCreateType('click')
+      setCreateType('url_match')
       setCreateSlotId('')
       setCreateUrlPattern('')
       toast.success('Conversion rule created')
@@ -337,7 +337,7 @@ export default function ConversionsPage() {
                   <Label>Conversion Type</Label>
                   <Select
                     value={createType}
-                    onValueChange={(v) => setCreateType(v as ConversionType)}
+                    onValueChange={(v) => setCreateType(v as string)}
                     disabled={isCreating}
                   >
                     <SelectTrigger>

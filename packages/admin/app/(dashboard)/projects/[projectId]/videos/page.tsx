@@ -62,8 +62,7 @@ interface VideoType {
   project_id: string
   title: string
   video_url: string
-  thumbnail_path: string | null
-  duration_seconds: number
+  duration_seconds: number | null
   created_at: string
   updated_at: string
 }
@@ -459,7 +458,7 @@ export default function VideosPage() {
                       </CardTitle>
                       <CardDescription className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {formatDuration(video.duration_seconds)}
+                        {formatDuration(video.duration_seconds ?? 0)}
                       </CardDescription>
                     </div>
                   </div>

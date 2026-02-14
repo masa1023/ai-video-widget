@@ -71,7 +71,7 @@ CREATE TABLE slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
-    title TEXT,  -- 管理用タイトル
+    title TEXT NOT NULL,  -- 管理用タイトル
     is_entry_point BOOLEAN NOT NULL DEFAULT FALSE,  -- 開始ノードかどうか
     -- ボタン設定
     detail_button_text TEXT,

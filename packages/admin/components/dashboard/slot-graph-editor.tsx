@@ -40,24 +40,19 @@ import {
   Layers,
   Play,
   Link as LinkIcon,
-  ExternalLink,
   ArrowRight,
   Trash2,
   Pencil,
   Star,
-  MousePointer,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-type ButtonType = 'cta' | 'detail' | 'transition'
 
 interface VideoType {
   id: string
   project_id: string
   title: string
-  storage_path: string
-  thumbnail_path: string | null
-  duration_ms: number
+  video_url: string
+  duration_seconds: number | null
   created_at: string
   updated_at: string
 }
@@ -66,15 +61,17 @@ interface SlotType {
   id: string
   project_id: string
   video_id: string
-  name: string
+  title: string
   is_entry_point: boolean
-  button_type: ButtonType
-  button_label: string
-  button_url: string | null
-  position_x: number
-  position_y: number
+  cta_button_text: string | null
+  cta_button_url: string | null
+  detail_button_text: string | null
+  detail_button_url: string | null
+  position_x: number | null
+  position_y: number | null
   created_at: string
   updated_at: string
+  video: VideoType
 }
 
 interface TransitionType {
@@ -121,9 +118,10 @@ export function SlotGraphEditor({
   // Edit slot dialog
   const [editSlot, setEditSlot] = useState<SlotType | null>(null)
   const [editName, setEditName] = useState('')
-  const [editButtonType, setEditButtonType] = useState<ButtonType>('cta')
-  const [editButtonLabel, setEditButtonLabel] = useState('')
-  const [editButtonUrl, setEditButtonUrl] = useState('')
+  const [editCtaText, setEditCtaText] = useState('')
+  const [editCtaUrl, setEditCtaUrl] = useState('')
+  const [editDetailText, setEditDetailText] = useState('')
+  const [editDetailUrl, setEditDetailUrl] = useState('')
   const [editIsEntry, setEditIsEntry] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -149,7 +147,7 @@ export function SlotGraphEditor({
     setIsCreating(true)
 
     const result = await onSlotCreate({
-      name: createName.trim(),
+      title: createName.trim(),
       video_id: createVideoId,
       position_x: 100 + Math.random() * 200,
       position_y: 100 + Math.random() * 200,
@@ -170,11 +168,11 @@ export function SlotGraphEditor({
     setIsSaving(true)
 
     const success = await onSlotUpdate(editSlot.id, {
-      name: editName.trim(),
-      button_type: editButtonType,
-      button_label: editButtonLabel.trim() || 'Click Here',
-      button_url:
-        editButtonType === 'cta' ? editButtonUrl.trim() || null : null,
+      title: editName.trim(),
+      cta_button_text: editCtaText.trim() || null,
+      cta_button_url: editCtaUrl.trim() || null,
+      detail_button_text: editDetailText.trim() || null,
+      detail_button_url: editDetailUrl.trim() || null,
       is_entry_point: editIsEntry,
     })
 
@@ -213,8 +211,8 @@ export function SlotGraphEditor({
       id: slot.id,
       startX: e.clientX,
       startY: e.clientY,
-      offsetX: slot.position_x,
-      offsetY: slot.position_y,
+      offsetX: slot.position_x || 0,
+      offsetY: slot.position_y || 0,
     })
   }
 
@@ -251,22 +249,6 @@ export function SlotGraphEditor({
     }
   }, [dragging, handleMouseMove, handleMouseUp])
 
-  const getVideoTitle = (videoId: string) => {
-    const video = videos.find((v) => v.id === videoId)
-    return video?.title || 'Unknown Video'
-  }
-
-  const getButtonIcon = (type: ButtonType) => {
-    switch (type) {
-      case 'cta':
-        return <ExternalLink className="h-3 w-3" />
-      case 'detail':
-        return <MousePointer className="h-3 w-3" />
-      case 'transition':
-        return <ArrowRight className="h-3 w-3" />
-    }
-  }
-
   // Calculate SVG lines for transitions
   const transitionLines = transitions
     .map((t) => {
@@ -276,10 +258,10 @@ export function SlotGraphEditor({
 
       return {
         id: t.id,
-        x1: fromSlot.position_x + 120,
-        y1: fromSlot.position_y + 50,
-        x2: toSlot.position_x,
-        y2: toSlot.position_y + 50,
+        x1: (fromSlot.position_x || 0) + 120,
+        y1: (fromSlot.position_y || 0) + 50,
+        x2: toSlot.position_x || 0,
+        y2: (toSlot.position_y || 0) + 50,
       }
     })
     .filter(Boolean) as {
@@ -411,8 +393,8 @@ export function SlotGraphEditor({
                 dragging?.id === slot.id && 'opacity-75'
               )}
               style={{
-                left: slot.position_x,
-                top: slot.position_y,
+                left: slot.position_x || 0,
+                top: slot.position_y || 0,
               }}
               onMouseDown={(e) => handleMouseDown(e, slot)}
               onClick={() => handleSlotClick(slot)}
@@ -434,7 +416,7 @@ export function SlotGraphEditor({
                       {slot.is_entry_point && (
                         <Star className="h-4 w-4 text-primary fill-primary" />
                       )}
-                      {slot.name}
+                      {slot.title}
                     </CardTitle>
                     {canEdit && (
                       <div className="flex items-center gap-1">
@@ -456,10 +438,11 @@ export function SlotGraphEditor({
                           onClick={(e) => {
                             e.stopPropagation()
                             setEditSlot(slot)
-                            setEditName(slot.name)
-                            setEditButtonType(slot.button_type)
-                            setEditButtonLabel(slot.button_label)
-                            setEditButtonUrl(slot.button_url || '')
+                            setEditName(slot.title || '')
+                            setEditCtaText(slot.cta_button_text || '')
+                            setEditCtaUrl(slot.cta_button_url || '')
+                            setEditDetailText(slot.detail_button_text || '')
+                            setEditDetailUrl(slot.detail_button_url || '')
                             setEditIsEntry(slot.is_entry_point)
                           }}
                         >
@@ -482,12 +465,20 @@ export function SlotGraphEditor({
                 </CardHeader>
                 <CardContent className="pt-0">
                   <p className="text-xs text-muted-foreground truncate mb-2">
-                    {getVideoTitle(slot.video_id)}
+                    {slot.video.title}
                   </p>
-                  <Badge variant="outline" className="text-xs">
-                    {getButtonIcon(slot.button_type)}
-                    <span className="ml-1">{slot.button_label}</span>
-                  </Badge>
+                  {slot.detail_button_text && (
+                    <Badge variant="outline" className="text-xs">
+                      <ArrowRight className="h-3 w-3" />
+                      <span className="ml-1">{slot.detail_button_text}</span>
+                    </Badge>
+                  )}
+                  {slot.cta_button_text && (
+                    <Badge variant="outline" className="text-xs mt-1">
+                      <ArrowRight className="h-3 w-3" />
+                      <span className="ml-1">{slot.cta_button_text}</span>
+                    </Badge>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -597,46 +588,45 @@ export function SlotGraphEditor({
               />
             </div>
             <div className="space-y-2">
-              <Label>Button Type</Label>
-              <Select
-                value={editButtonType}
-                onValueChange={(v) => setEditButtonType(v as ButtonType)}
-                disabled={isSaving}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cta">CTA (External Link)</SelectItem>
-                  <SelectItem value="detail">Detail (Show Info)</SelectItem>
-                  <SelectItem value="transition">
-                    Transition (Next Video)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-label">Button Label</Label>
+              <Label htmlFor="edit-cta-text">CTA Button Text</Label>
               <Input
-                id="edit-label"
-                placeholder="Click Here"
-                value={editButtonLabel}
-                onChange={(e) => setEditButtonLabel(e.target.value)}
+                id="edit-cta-text"
+                placeholder="Learn More"
+                value={editCtaText}
+                onChange={(e) => setEditCtaText(e.target.value)}
                 disabled={isSaving}
               />
             </div>
-            {editButtonType === 'cta' && (
-              <div className="space-y-2">
-                <Label htmlFor="edit-url">Button URL</Label>
-                <Input
-                  id="edit-url"
-                  placeholder="https://example.com"
-                  value={editButtonUrl}
-                  onChange={(e) => setEditButtonUrl(e.target.value)}
-                  disabled={isSaving}
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="edit-cta-url">CTA Button URL</Label>
+              <Input
+                id="edit-cta-url"
+                placeholder="https://example.com"
+                value={editCtaUrl}
+                onChange={(e) => setEditCtaUrl(e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-detail-text">Detail Button Text</Label>
+              <Input
+                id="edit-detail-text"
+                placeholder="View Details"
+                value={editDetailText}
+                onChange={(e) => setEditDetailText(e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-detail-url">Detail Button URL</Label>
+              <Input
+                id="edit-detail-url"
+                placeholder="https://example.com/details"
+                value={editDetailUrl}
+                onChange={(e) => setEditDetailUrl(e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -673,7 +663,7 @@ export function SlotGraphEditor({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Slot</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteSlot?.name}&quot;?
+              Are you sure you want to delete &quot;{deleteSlot?.title}&quot;?
               This will also remove all transitions connected to this slot.
             </AlertDialogDescription>
           </AlertDialogHeader>

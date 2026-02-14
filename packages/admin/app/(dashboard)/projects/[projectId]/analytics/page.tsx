@@ -41,13 +41,14 @@ interface SlotType {
   id: string
   project_id: string
   video_id: string
-  name: string
+  title: string | null
   is_entry_point: boolean
-  button_type: 'cta' | 'detail' | 'transition'
-  button_label: string
-  button_url: string | null
-  position_x: number
-  position_y: number
+  cta_button_text: string | null
+  cta_button_url: string | null
+  detail_button_text: string | null
+  detail_button_url: string | null
+  position_x: number | null
+  position_y: number | null
   created_at: string
   updated_at: string
 }
@@ -56,9 +57,8 @@ interface VideoType {
   id: string
   project_id: string
   title: string
-  storage_path: string
-  thumbnail_path: string | null
-  duration_ms: number
+  video_url: string
+  duration_seconds: number | null
   created_at: string
   updated_at: string
 }
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
 
       return {
         slotId: slot.id,
-        slotName: slot.name,
+        slotName: slot.title || 'Untitled',
         videoTitle: video?.title || 'Unknown',
         starts,
         views,
