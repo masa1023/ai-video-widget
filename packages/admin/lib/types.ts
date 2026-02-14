@@ -36,10 +36,12 @@ export interface AnalyticsData {
     slotId: string
     slotName: string
     videoTitle: string
+    durationSeconds: number | null
     starts: number
     views: number
-    viewRate: number
-    clicks: number
+    totalPlayedSeconds: number
+    avgPlayedSeconds: number
+    avgPlayRate: number
   }[]
   clickBreakdown: {
     buttonType: string

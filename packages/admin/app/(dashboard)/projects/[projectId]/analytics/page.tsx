@@ -35,7 +35,7 @@ import {
   BarChart3,
   Layers,
 } from 'lucide-react'
-import type { Slot, Video, AnalyticsData } from '@/lib/types'
+import type { AnalyticsData } from '@/lib/types'
 
 export default function AnalyticsPage() {
   const params = useParams()
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
         .gte('created_at', sinceDate),
       supabase
         .from('event_video_views')
-        .select('id, slot_id', { count: 'exact' })
+        .select('id, slot_id, played_seconds', { count: 'exact' })
         .eq('project_id', projectId)
         .gte('created_at', sinceDate),
       supabase
@@ -123,21 +123,32 @@ export default function AnalyticsPage() {
       const video = (videosResult.data || []).find(
         (v) => v.id === slot.video_id
       )
+      const durationSeconds = video?.duration_seconds ?? null
       const starts =
         videoStartsResult.data?.filter((e) => e.slot_id === slot.id).length || 0
-      const views =
-        videoViewsResult.data?.filter((e) => e.slot_id === slot.id).length || 0
-      const slotClicks =
-        clicksResult.data?.filter((e) => e.slot_id === slot.id).length || 0
+      const slotViews =
+        videoViewsResult.data?.filter((e) => e.slot_id === slot.id) || []
+      const totalPlayedSeconds = slotViews.reduce(
+        (sum, e) => sum + (e.played_seconds || 0),
+        0
+      )
+      const avgPlayedSeconds =
+        slotViews.length > 0 ? totalPlayedSeconds / slotViews.length : 0
+      const avgPlayRate =
+        durationSeconds && durationSeconds > 0
+          ? (avgPlayedSeconds / durationSeconds) * 100
+          : 0
 
       return {
         slotId: slot.id,
         slotName: slot.title || 'Untitled',
         videoTitle: video?.title || 'Unknown',
+        durationSeconds,
         starts,
-        views,
-        viewRate: starts > 0 ? (views / starts) * 100 : 0,
-        clicks: slotClicks,
+        views: slotViews.length,
+        totalPlayedSeconds,
+        avgPlayedSeconds,
+        avgPlayRate,
       }
     })
 
@@ -197,6 +208,12 @@ export default function AnalyticsPage() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  const formatSeconds = (s: number) => {
+    const m = Math.floor(s / 60)
+    const sec = Math.round(s % 60)
+    return `${m}:${sec.toString().padStart(2, '0')}`
+  }
 
   const formatButtonType = (type: string) => {
     switch (type) {
@@ -327,9 +344,11 @@ export default function AnalyticsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Slot</TableHead>
-                    <TableHead className="text-right">Plays</TableHead>
                     <TableHead className="text-right">Views</TableHead>
-                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Duration</TableHead>
+                    <TableHead className="text-right">Total Play</TableHead>
+                    <TableHead className="text-right">Avg Play</TableHead>
+                    <TableHead className="text-right">Avg Rate</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -344,11 +363,23 @@ export default function AnalyticsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {stat.starts}
+                        {stat.starts} ({stat.views})
                       </TableCell>
-                      <TableCell className="text-right">{stat.views}</TableCell>
                       <TableCell className="text-right">
-                        {stat.viewRate.toFixed(0)}%
+                        {stat.durationSeconds != null
+                          ? formatSeconds(stat.durationSeconds)
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatSeconds(stat.totalPlayedSeconds)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatSeconds(stat.avgPlayedSeconds)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {stat.durationSeconds
+                          ? `${stat.avgPlayRate.toFixed(0)}%`
+                          : '-'}
                       </TableCell>
                     </TableRow>
                   ))}
