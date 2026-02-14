@@ -22,8 +22,8 @@ export async function signUp(formData: FormData): Promise<AuthActionResult> {
     return { error: 'Email, password, and organization name are required' }
   }
 
-  if (password.length < 8) {
-    return { error: 'Password must be at least 8 characters' }
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters' }
   }
 
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -150,8 +150,8 @@ export async function updatePassword(
     return { error: 'Passwords do not match' }
   }
 
-  if (password.length < 8) {
-    return { error: 'Password must be at least 8 characters' }
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters' }
   }
 
   const { error } = await supabase.auth.updateUser({

@@ -31,14 +31,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const passwordRequirements = [
-    { label: 'At least 8 characters', met: password.length >= 8 },
-    { label: 'Contains a number', met: /\d/.test(password) },
-    { label: 'Contains uppercase', met: /[A-Z]/.test(password) },
-    { label: 'Contains lowercase', met: /[a-z]/.test(password) },
-  ]
-
-  const allRequirementsMet = passwordRequirements.every((req) => req.met)
+  const passwordValid = password.length >= 6
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0
 
@@ -46,8 +39,8 @@ export default function SignupPage() {
     e.preventDefault()
     setError(null)
 
-    if (!allRequirementsMet) {
-      setError('Please meet all password requirements')
+    if (!passwordValid) {
+      setError('Password must be at least 6 characters')
       return
     }
 
@@ -209,22 +202,10 @@ export default function SignupPage() {
                 )}
               </button>
             </div>
-            {password.length > 0 && (
-              <ul className="mt-2 space-y-1 text-xs">
-                {passwordRequirements.map((req, index) => (
-                  <li
-                    key={index}
-                    className={`flex items-center gap-1 ${
-                      req.met ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <CheckCircle
-                      className={`h-3 w-3 ${req.met ? 'opacity-100' : 'opacity-30'}`}
-                    />
-                    {req.label}
-                  </li>
-                ))}
-              </ul>
+            {password.length > 0 && !passwordValid && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                At least 6 characters
+              </p>
             )}
           </div>
           <div className="space-y-2">
@@ -252,7 +233,7 @@ export default function SignupPage() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || !allRequirementsMet || !passwordsMatch}
+            disabled={isLoading || !passwordValid || !passwordsMatch}
           >
             {isLoading ? (
               <>
