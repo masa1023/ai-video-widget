@@ -192,10 +192,10 @@ CREATE TABLE event_clicks (
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
     video_id UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
-    click_type TEXT NOT NULL,  -- 'cta', 'detail', 'transition'
+    click_type TEXT NOT NULL,  -- 'cta', 'detail', 'next_video'
     target_label TEXT,  -- ボタンのラベル
     target_url TEXT,  -- クリック先URL（CTAや詳細ボタンの場合）
-    next_slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,  -- 遷移先スロット（transitionの場合）
+    next_slot_id UUID REFERENCES slots(id) ON DELETE SET NULL,  -- 遷移先スロット（next_videoの場合）
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

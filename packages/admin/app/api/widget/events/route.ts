@@ -54,9 +54,11 @@ interface VideoViewPayload extends BaseEventPayload {
 interface ClickPayload extends BaseEventPayload {
   event_type: 'click'
   slot_id: string
-  button_label: string
+  video_id: string
   button_type: string
+  button_label: string
   destination_url?: string
+  next_slot_id?: string
 }
 
 interface ConversionPayload extends BaseEventPayload {
@@ -240,8 +242,9 @@ export async function POST(request: NextRequest) {
         const clickPayload = payload as ClickPayload
         if (
           !clickPayload.slot_id ||
-          !clickPayload.button_label ||
-          !clickPayload.button_type
+          !clickPayload.video_id ||
+          !clickPayload.button_type ||
+          !clickPayload.button_label
         ) {
           return NextResponse.json(
             { error: 'Missing required fields for click event' },
@@ -253,9 +256,11 @@ export async function POST(request: NextRequest) {
           project_id: clickPayload.project_id,
           session_id: validSessionId,
           slot_id: clickPayload.slot_id,
-          target_label: clickPayload.button_label,
+          video_id: clickPayload.video_id,
           click_type: clickPayload.button_type,
+          target_label: clickPayload.button_label,
           target_url: clickPayload.destination_url || null,
+          next_slot_id: clickPayload.next_slot_id || null,
         })
 
         if (error) {

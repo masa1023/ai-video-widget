@@ -168,7 +168,18 @@ function VideoWidget({ config, apiUrl }) {
     setProgress((currentTime / duration) * 100)
   }
 
-  const handleSlotSelect = (slotId) => {
+  const handleSlotSelect = (slotId, buttonLabel) => {
+    sendEvent(
+      apiUrl,
+      buildEventPayload({
+        event_type: 'click',
+        slot_id: currentSlotId,
+        video_id: currentSlot.video.id,
+        button_type: 'next_video',
+        button_label: buttonLabel,
+        next_slot_id: slotId,
+      })
+    )
     sendVideoView(currentSlotId)
     videoStartSentRef.current = false
     setHistoryStack([...historyStack, slotId])
@@ -191,7 +202,18 @@ function VideoWidget({ config, apiUrl }) {
     setIsPlaying(true)
   }
 
-  const handleExternalLink = (url) => {
+  const handleExternalLink = (url, buttonLabel, buttonType) => {
+    sendEvent(
+      apiUrl,
+      buildEventPayload({
+        event_type: 'click',
+        slot_id: currentSlotId,
+        video_id: currentSlot.video.id,
+        button_type: buttonType,
+        button_label: buttonLabel,
+        destination_url: url,
+      })
+    )
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
@@ -346,7 +368,9 @@ function VideoWidget({ config, apiUrl }) {
                       <button
                         key={nextSlotId}
                         class="next-video-button"
-                        onClick={() => handleSlotSelect(nextSlotId)}
+                        onClick={() =>
+                          handleSlotSelect(nextSlotId, nextSlot.title)
+                        }
                       >
                         {nextSlot.title}
                       </button>
@@ -358,7 +382,11 @@ function VideoWidget({ config, apiUrl }) {
                 <button
                   class="detail-button"
                   onClick={() =>
-                    handleExternalLink(currentSlot.detailButtonUrl)
+                    handleExternalLink(
+                      currentSlot.detailButtonUrl,
+                      currentSlot.detailButtonText,
+                      'detail'
+                    )
                   }
                 >
                   {currentSlot.detailButtonText}
@@ -368,7 +396,13 @@ function VideoWidget({ config, apiUrl }) {
               {currentSlot.ctaButtonText && currentSlot.ctaButtonUrl && (
                 <button
                   class="cta-button"
-                  onClick={() => handleExternalLink(currentSlot.ctaButtonUrl)}
+                  onClick={() =>
+                    handleExternalLink(
+                      currentSlot.ctaButtonUrl,
+                      currentSlot.ctaButtonText,
+                      'cta'
+                    )
+                  }
                 >
                   {currentSlot.ctaButtonText}
                   <ExternalLink size={18} />
