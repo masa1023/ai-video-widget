@@ -56,7 +56,15 @@ function VideoWidget({ config, apiUrl }) {
   const [currentSubtitle, setCurrentSubtitle] = useState('')
   const [historyStack, setHistoryStack] = useState([config.entrySlotId])
   const [isMuted, setIsMuted] = useState(false)
+  // played_seconds 計算用:
+  // playStartTimeRef: 現在の再生区間の開始位置(currentTime)。再生中はnull以外、一時停止中はnull
+  // accumulatedSecondsRef: 一時停止ごとに加算される累積再生秒数
+  // 最終的な played_seconds = accumulatedSecondsRef + (現在のcurrentTime - playStartTimeRef)
   const playStartTimeRef = useRef(null)
+  const accumulatedSecondsRef = useRef(0)
+  // video_start イベントの重複送信防止用フラグ。
+  // 各スロットで最初の再生開始時のみ true にし、スロット切替・クローズ時に false にリセットする
+  const videoStartSentRef = useRef(false)
 
   const currentSlot = config.slots.find((s) => s.id === currentSlotId)
   const nextSlotIds = config.transitions
@@ -72,11 +80,20 @@ function VideoWidget({ config, apiUrl }) {
     }
   }
 
+  // 現在の再生区間の秒数を累積値に加算し、区間をリセットする
+  const flushAccumulated = () => {
+    if (playStartTimeRef.current !== null) {
+      const currentTime = playerRef.current?.currentTime ?? 0
+      accumulatedSecondsRef.current += currentTime - playStartTimeRef.current
+      playStartTimeRef.current = null
+    }
+  }
+
+  // 累積した played_seconds を送信し、カウンターをリセットする
   const sendVideoView = (slotId, useBeacon = false) => {
-    if (playStartTimeRef.current === null) return
-    const currentTime = playerRef.current?.currentTime ?? 0
-    const playedSeconds = currentTime - playStartTimeRef.current
-    playStartTimeRef.current = null
+    flushAccumulated()
+    const playedSeconds = accumulatedSecondsRef.current
+    accumulatedSecondsRef.current = 0
     if (playedSeconds <= 0) return
 
     const payload = buildEventPayload({
@@ -92,18 +109,28 @@ function VideoWidget({ config, apiUrl }) {
     }
   }
 
-  const handlePlay = () => {
+  // 再生開始/再開時: 新しい再生区間の開始位置を記録
+  const handlePlaying = () => {
     playStartTimeRef.current = playerRef.current?.currentTime ?? 0
-    const payload = buildEventPayload({
-      event_type: 'video_start',
-      slot_id: currentSlotId,
-      video_id: currentSlot.video.id,
-    })
-    sendEvent(apiUrl, payload)
+    if (!videoStartSentRef.current) {
+      videoStartSentRef.current = true
+      const payload = buildEventPayload({
+        event_type: 'video_start',
+        slot_id: currentSlotId,
+        video_id: currentSlot.video.id,
+      })
+      sendEvent(apiUrl, payload)
+    }
   }
 
+  // 一時停止時: 区間の秒数を累積に加算するだけ（ログ送信しない）
   const handlePause = () => {
+    flushAccumulated()
+  }
+
+  const handleEnded = () => {
     sendVideoView(currentSlotId)
+    setIsPlaying(false)
   }
 
   const handleCircleClick = async () => {
@@ -124,6 +151,8 @@ function VideoWidget({ config, apiUrl }) {
 
   const handleClose = (e) => {
     e.stopPropagation()
+    sendVideoView(currentSlotId)
+    videoStartSentRef.current = false
     setIsExpanded(false)
     setIsPlaying(false)
   }
@@ -140,6 +169,8 @@ function VideoWidget({ config, apiUrl }) {
   }
 
   const handleSlotSelect = (slotId) => {
+    sendVideoView(currentSlotId)
+    videoStartSentRef.current = false
     setHistoryStack([...historyStack, slotId])
     setCurrentSlotId(slotId)
     setProgress(0)
@@ -150,6 +181,8 @@ function VideoWidget({ config, apiUrl }) {
   const handleGoBack = () => {
     if (historyStack.length <= 1) return
 
+    sendVideoView(currentSlotId)
+    videoStartSentRef.current = false
     const newStack = historyStack.slice(0, -1)
     setHistoryStack(newStack)
     setCurrentSlotId(newStack[newStack.length - 1])
@@ -165,11 +198,12 @@ function VideoWidget({ config, apiUrl }) {
   // Send video_view via sendBeacon when page is hidden (close/navigate away)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (
-        document.visibilityState === 'hidden' &&
-        playStartTimeRef.current !== null
-      ) {
-        sendVideoView(currentSlotId, true)
+      if (document.visibilityState === 'hidden') {
+        const hasUnsent =
+          playStartTimeRef.current !== null || accumulatedSecondsRef.current > 0
+        if (hasUnsent) {
+          sendVideoView(currentSlotId, true)
+        }
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -265,12 +299,9 @@ function VideoWidget({ config, apiUrl }) {
             playsInline={true}
             width="100%"
             height="100%"
-            onPlaying={handlePlay}
+            onPlaying={handlePlaying}
             onPause={handlePause}
-            onEnded={() => {
-              sendVideoView(currentSlotId)
-              setIsPlaying(false)
-            }}
+            onEnded={handleEnded}
             onTimeUpdate={handleTimeUpdate}
             muted={isMuted}
           />
