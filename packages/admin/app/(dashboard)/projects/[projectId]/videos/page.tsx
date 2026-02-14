@@ -46,7 +46,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import {
   Plus,
-  Video,
+  Video as VideoIcon,
   MoreVertical,
   Pencil,
   Trash2,
@@ -56,23 +56,14 @@ import {
   FileVideo,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface VideoType {
-  id: string
-  project_id: string
-  title: string
-  video_url: string
-  duration_seconds: number | null
-  created_at: string
-  updated_at: string
-}
+import type { Video } from '@/lib/types'
 
 export default function VideosPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const [videos, setVideos] = useState<VideoType[]>([])
+  const [videos, setVideos] = useState<Video[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
 
@@ -85,12 +76,12 @@ export default function VideosPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Edit state
-  const [editVideo, setEditVideo] = useState<VideoType | null>(null)
+  const [editVideo, setEditVideo] = useState<Video | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Delete state
-  const [deleteVideo, setDeleteVideo] = useState<VideoType | null>(null)
+  const [deleteVideo, setDeleteVideo] = useState<Video | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const loadVideos = useCallback(async () => {
@@ -508,7 +499,7 @@ export default function VideosPage() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <div className="rounded-full bg-muted p-4">
-              <Video className="h-8 w-8 text-muted-foreground" />
+              <VideoIcon className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="mt-4 text-lg font-semibold">No videos yet</h3>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">

@@ -46,53 +46,25 @@ import {
   Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface VideoType {
-  id: string
-  project_id: string
-  title: string
-  video_url: string
-  duration_seconds: number | null
-  created_at: string
-  updated_at: string
-}
-
-interface SlotType {
-  id: string
-  project_id: string
-  video_id: string
-  title: string
-  is_entry_point: boolean
-  cta_button_text: string | null
-  cta_button_url: string | null
-  detail_button_text: string | null
-  detail_button_url: string | null
-  position_x: number | null
-  position_y: number | null
-  created_at: string
-  updated_at: string
-  video: VideoType
-}
-
-interface TransitionType {
-  id: string
-  from_slot_id: string
-  to_slot_id: string
-  created_at: string
-}
+import type { Video, SlotWithVideo, Transition } from '@/lib/types'
 
 interface SlotGraphEditorProps {
-  videos: VideoType[]
-  slots: SlotType[]
-  transitions: TransitionType[]
+  videos: Video[]
+  slots: SlotWithVideo[]
+  transitions: Transition[]
   canEdit: boolean
-  onSlotCreate: (slot: Partial<SlotType>) => Promise<SlotType | null>
-  onSlotUpdate: (id: string, updates: Partial<SlotType>) => Promise<boolean>
+  onSlotCreate: (
+    slot: Partial<SlotWithVideo>
+  ) => Promise<SlotWithVideo | null>
+  onSlotUpdate: (
+    id: string,
+    updates: Partial<SlotWithVideo>
+  ) => Promise<boolean>
   onSlotDelete: (id: string) => Promise<boolean>
   onTransitionCreate: (
     fromSlotId: string,
     toSlotId: string
-  ) => Promise<TransitionType | null>
+  ) => Promise<Transition | null>
   onTransitionDelete: (id: string) => Promise<boolean>
 }
 
@@ -116,7 +88,7 @@ export function SlotGraphEditor({
   const [isCreating, setIsCreating] = useState(false)
 
   // Edit slot dialog
-  const [editSlot, setEditSlot] = useState<SlotType | null>(null)
+  const [editSlot, setEditSlot] = useState<SlotWithVideo | null>(null)
   const [editName, setEditName] = useState('')
   const [editCtaText, setEditCtaText] = useState('')
   const [editCtaUrl, setEditCtaUrl] = useState('')
@@ -126,7 +98,7 @@ export function SlotGraphEditor({
   const [isSaving, setIsSaving] = useState(false)
 
   // Delete slot dialog
-  const [deleteSlot, setDeleteSlot] = useState<SlotType | null>(null)
+  const [deleteSlot, setDeleteSlot] = useState<SlotWithVideo | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Connection mode
@@ -192,7 +164,7 @@ export function SlotGraphEditor({
     setDeleteSlot(null)
   }
 
-  const handleSlotClick = (slot: SlotType) => {
+  const handleSlotClick = (slot: SlotWithVideo) => {
     if (connectingFrom) {
       if (connectingFrom !== slot.id) {
         onTransitionCreate(connectingFrom, slot.id)
@@ -201,7 +173,7 @@ export function SlotGraphEditor({
     }
   }
 
-  const handleMouseDown = (e: React.MouseEvent, slot: SlotType) => {
+  const handleMouseDown = (e: React.MouseEvent, slot: SlotWithVideo) => {
     if (!canEdit) return
 
     const rect = canvasRef.current?.getBoundingClientRect()

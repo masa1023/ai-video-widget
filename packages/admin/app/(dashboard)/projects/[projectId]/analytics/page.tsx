@@ -33,57 +33,10 @@ import {
   MousePointer,
   Target,
   TrendingUp,
-  Video,
+  Video as VideoIcon,
   BarChart3,
 } from 'lucide-react'
-
-interface SlotType {
-  id: string
-  project_id: string
-  video_id: string
-  title: string | null
-  is_entry_point: boolean
-  cta_button_text: string | null
-  cta_button_url: string | null
-  detail_button_text: string | null
-  detail_button_url: string | null
-  position_x: number | null
-  position_y: number | null
-  created_at: string
-  updated_at: string
-}
-
-interface VideoType {
-  id: string
-  project_id: string
-  title: string
-  video_url: string
-  duration_seconds: number | null
-  created_at: string
-  updated_at: string
-}
-
-interface AnalyticsData {
-  widgetOpens: number
-  videoStarts: number
-  videoViews: number
-  clicks: number
-  conversions: number
-  conversionRate: number
-  slotStats: {
-    slotId: string
-    slotName: string
-    videoTitle: string
-    starts: number
-    views: number
-    viewRate: number
-    clicks: number
-  }[]
-  clickBreakdown: {
-    buttonType: string
-    count: number
-  }[]
-}
+import type { Slot, Video, AnalyticsData } from '@/lib/types'
 
 export default function AnalyticsPage() {
   const params = useParams()
@@ -93,8 +46,8 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState('30')
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
-  const [slots, setSlots] = useState<SlotType[]>([])
-  const [videos, setVideos] = useState<VideoType[]>([])
+  const [slots, setSlots] = useState<Slot[]>([])
+  const [videos, setVideos] = useState<Video[]>([])
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -340,7 +293,7 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Video className="h-5 w-5" />
+              <VideoIcon className="h-5 w-5" />
               Video Performance
             </CardTitle>
             <CardDescription>
@@ -382,7 +335,7 @@ export default function AnalyticsPage() {
               </Table>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Video className="h-8 w-8 text-muted-foreground" />
+                <VideoIcon className="h-8 w-8 text-muted-foreground" />
                 <p className="mt-2 text-sm text-muted-foreground">
                   No video data available yet
                 </p>

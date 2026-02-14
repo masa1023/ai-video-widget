@@ -224,7 +224,6 @@ export async function POST(request: NextRequest) {
           slot_id: videoViewPayload.slot_id,
           video_id: videoViewPayload.video_id,
           played_seconds: videoViewPayload.played_seconds,
-          duration_seconds: 0, // Deprecated field, set to 0
         })
 
         if (error) {

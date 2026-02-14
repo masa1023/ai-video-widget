@@ -6,49 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import { SlotGraphEditor } from '@/components/dashboard/slot-graph-editor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
-
-interface VideoType {
-  id: string
-  project_id: string
-  title: string
-  video_url: string
-  duration_seconds: number | null
-  created_at: string
-  updated_at: string
-}
-
-interface SlotType {
-  id: string
-  project_id: string
-  video_id: string
-  title: string | null
-  is_entry_point: boolean
-  cta_button_text: string | null
-  cta_button_url: string | null
-  detail_button_text: string | null
-  detail_button_url: string | null
-  position_x: number | null
-  position_y: number | null
-  created_at: string
-  updated_at: string
-  video: VideoType
-}
-
-interface TransitionType {
-  id: string
-  from_slot_id: string
-  to_slot_id: string
-  created_at: string
-}
+import type { Video, SlotWithVideo, Transition } from '@/lib/types'
 
 export default function SlotsPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const [videos, setVideos] = useState<VideoType[]>([])
-  const [slots, setSlots] = useState<SlotType[]>([])
-  const [transitions, setTransitions] = useState<TransitionType[]>([])
+  const [videos, setVideos] = useState<Video[]>([])
+  const [slots, setSlots] = useState<SlotWithVideo[]>([])
+  const [transitions, setTransitions] = useState<Transition[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
 
@@ -88,7 +55,7 @@ export default function SlotsPage() {
       .eq('project_id', projectId)
       .order('created_at')
 
-    setSlots((slotsData as unknown as SlotType[]) || [])
+    setSlots((slotsData as unknown as SlotWithVideo[]) || [])
 
     // Get transitions
     if (slotsData && slotsData.length > 0) {
@@ -110,7 +77,7 @@ export default function SlotsPage() {
 
   const canEdit = userRole === 'owner' || userRole === 'admin'
 
-  const handleSlotCreate = async (slot: Partial<SlotType>) => {
+  const handleSlotCreate = async (slot: Partial<SlotWithVideo>) => {
     const supabase = createClient()
 
     const { data, error } = await supabase
@@ -131,12 +98,12 @@ export default function SlotsPage() {
       return null
     }
 
-    setSlots([...slots, data as unknown as SlotType])
+    setSlots([...slots, data as unknown as SlotWithVideo])
     toast.success('Slot created')
-    return data as unknown as SlotType
+    return data as unknown as SlotWithVideo
   }
 
-  const handleSlotUpdate = async (id: string, updates: Partial<SlotType>) => {
+  const handleSlotUpdate = async (id: string, updates: Partial<SlotWithVideo>) => {
     const supabase = createClient()
 
     // If setting as entry point, unset others

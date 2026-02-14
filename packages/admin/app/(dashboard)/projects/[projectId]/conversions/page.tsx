@@ -60,41 +60,15 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface ConversionRuleType {
-  id: string
-  project_id: string
-  name: string
-  rule_type: string
-  rule_value: string
-  attribution_days: number
-  created_at: string
-  updated_at: string
-}
-
-interface SlotType {
-  id: string
-  project_id: string
-  video_id: string
-  title: string | null
-  is_entry_point: boolean
-  cta_button_text: string | null
-  cta_button_url: string | null
-  detail_button_text: string | null
-  detail_button_url: string | null
-  position_x: number | null
-  position_y: number | null
-  created_at: string
-  updated_at: string
-}
+import type { ConversionRule, Slot } from '@/lib/types'
 
 export default function ConversionsPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
 
-  const [rules, setRules] = useState<ConversionRuleType[]>([])
-  const [slots, setSlots] = useState<SlotType[]>([])
+  const [rules, setRules] = useState<ConversionRule[]>([])
+  const [slots, setSlots] = useState<Slot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
 
@@ -108,12 +82,12 @@ export default function ConversionsPage() {
   const [isCreating, setIsCreating] = useState(false)
 
   // Edit state
-  const [editRule, setEditRule] = useState<ConversionRuleType | null>(null)
+  const [editRule, setEditRule] = useState<ConversionRule | null>(null)
   const [editName, setEditName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Delete state
-  const [deleteRule, setDeleteRule] = useState<ConversionRuleType | null>(null)
+  const [deleteRule, setDeleteRule] = useState<ConversionRule | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const loadData = useCallback(async () => {

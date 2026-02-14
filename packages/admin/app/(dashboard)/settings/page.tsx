@@ -16,20 +16,7 @@ import {
 } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Loader2, User, Building2, Mail } from 'lucide-react'
-
-interface Profile {
-  id: string
-  display_name: string | null
-  email: string
-  organization_id: string
-  role: string
-}
-
-interface Organization {
-  id: string
-  name: string
-  status: string
-}
+import type { Profile, Organization } from '@/lib/types'
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)

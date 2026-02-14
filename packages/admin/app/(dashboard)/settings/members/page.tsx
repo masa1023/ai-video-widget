@@ -51,14 +51,7 @@ import {
 import { toast } from 'sonner'
 import { Loader2, UserPlus, Users, Shield, Trash2, Crown } from 'lucide-react'
 import { redirect } from 'next/navigation'
-
-interface Member {
-  id: string
-  display_name: string | null
-  email: string
-  role: 'owner' | 'admin' | 'viewer'
-  created_at: string
-}
+import type { Member } from '@/lib/types'
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([])
