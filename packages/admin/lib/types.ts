@@ -45,4 +45,12 @@ export interface AnalyticsData {
     buttonType: string
     count: number
   }[]
+  clickBySlot: {
+    slotId: string
+    slotName: string
+    cta: number
+    detail: number
+    nextVideo: number
+    total: number
+  }[]
 }

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -32,9 +31,9 @@ import {
   Play,
   MousePointer,
   Target,
-  TrendingUp,
   Video as VideoIcon,
   BarChart3,
+  Layers,
 } from 'lucide-react'
 import type { Slot, Video, AnalyticsData } from '@/lib/types'
 
@@ -46,8 +45,6 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState('30')
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
-  const [slots, setSlots] = useState<Slot[]>([])
-  const [videos, setVideos] = useState<Video[]>([])
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -66,9 +63,6 @@ export default function AnalyticsPage() {
       supabase.from('slots').select('*').eq('project_id', projectId),
       supabase.from('videos').select('*').eq('project_id', projectId),
     ])
-
-    setSlots(slotsResult.data || [])
-    setVideos(videosResult.data || [])
 
     // Calculate date range
     const daysAgo = new Date()
@@ -111,7 +105,7 @@ export default function AnalyticsPage() {
         .gte('created_at', sinceDate),
       supabase
         .from('event_clicks')
-        .select('click_type')
+        .select('click_type, slot_id')
         .eq('project_id', projectId)
         .gte('created_at', sinceDate),
     ])
@@ -159,6 +153,32 @@ export default function AnalyticsPage() {
       count,
     }))
 
+    // Click by slot
+    const slotClickMap: Record<
+      string,
+      { cta: number; detail: number; nextVideo: number }
+    > = {}
+    clicksByTypeResult.data?.forEach((click) => {
+      const sid = click.slot_id || '(unknown)'
+      if (!slotClickMap[sid]) {
+        slotClickMap[sid] = { cta: 0, detail: 0, nextVideo: 0 }
+      }
+      if (click.click_type === 'cta') slotClickMap[sid].cta++
+      else if (click.click_type === 'detail') slotClickMap[sid].detail++
+      else if (click.click_type === 'next_video') slotClickMap[sid].nextVideo++
+    })
+    const clickBySlot = Object.entries(slotClickMap)
+      .map(([sid, counts]) => {
+        const slot = (slotsResult.data || []).find((s) => s.id === sid)
+        return {
+          slotId: sid,
+          slotName: slot?.title || 'Unknown',
+          ...counts,
+          total: counts.cta + counts.detail + counts.nextVideo,
+        }
+      })
+      .sort((a, b) => b.total - a.total)
+
     setData({
       widgetOpens,
       videoStarts,
@@ -168,6 +188,7 @@ export default function AnalyticsPage() {
       conversionRate,
       slotStats,
       clickBreakdown,
+      clickBySlot,
     })
 
     setIsLoading(false)
@@ -183,8 +204,8 @@ export default function AnalyticsPage() {
         return 'CTA Links'
       case 'detail':
         return 'Details'
-      case 'transition':
-        return 'Transitions'
+      case 'next_video':
+        return 'Next Video'
       default:
         return type
     }
@@ -380,6 +401,57 @@ export default function AnalyticsPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <MousePointer className="h-8 w-8 text-muted-foreground" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No click data available yet
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              Clicks by Slot
+            </CardTitle>
+            <CardDescription>Click type breakdown per slot</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {data?.clickBySlot && data.clickBySlot.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Slot</TableHead>
+                    <TableHead className="text-right">CTA</TableHead>
+                    <TableHead className="text-right">Detail</TableHead>
+                    <TableHead className="text-right">Next</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.clickBySlot.map((item) => (
+                    <TableRow key={item.slotId}>
+                      <TableCell className="font-medium">
+                        {item.slotName}
+                      </TableCell>
+                      <TableCell className="text-right">{item.cta}</TableCell>
+                      <TableCell className="text-right">
+                        {item.detail}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.nextVideo}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {item.total}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Layers className="h-8 w-8 text-muted-foreground" />
                 <p className="mt-2 text-sm text-muted-foreground">
                   No click data available yet
                 </p>
