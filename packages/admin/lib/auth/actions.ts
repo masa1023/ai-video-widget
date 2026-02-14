@@ -30,7 +30,7 @@ export async function signUp(formData: FormData): Promise<AuthActionResult> {
     email,
     password,
     options: {
-      // emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`,
       data: {
         display_name: displayName || email.split('@')[0],
         organization_name: organizationName,
