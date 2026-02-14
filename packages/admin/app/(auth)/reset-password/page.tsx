@@ -4,7 +4,7 @@ import React from 'react'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { resetPassword, type AuthActionResult } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,17 +32,13 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
+      const formData = new FormData()
+      formData.set('email', email)
 
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        {
-          redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
-        }
-      )
+      const result: AuthActionResult = await resetPassword(formData)
 
-      if (resetError) {
-        setError(resetError.message)
+      if (result.error) {
+        setError(result.error)
         setIsLoading(false)
         return
       }
