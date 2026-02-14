@@ -37,7 +37,6 @@ async function sendEvent(apiUrl, payload) {
 }
 
 function sendEventBeacon(apiUrl, payload) {
-  console.log('Sending beacon event:', payload)
   try {
     const blob = new Blob([JSON.stringify(payload)], {
       type: 'application/json',
