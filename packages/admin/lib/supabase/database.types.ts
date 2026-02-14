@@ -145,7 +145,6 @@ export type Database = {
           conversion_rule_id: string
           created_at: string
           id: string
-          last_video_start_id: string | null
           matched_url: string | null
           session_id: string
         }
@@ -153,7 +152,6 @@ export type Database = {
           conversion_rule_id: string
           created_at?: string
           id?: string
-          last_video_start_id?: string | null
           matched_url?: string | null
           session_id: string
         }
@@ -161,7 +159,6 @@ export type Database = {
           conversion_rule_id?: string
           created_at?: string
           id?: string
-          last_video_start_id?: string | null
           matched_url?: string | null
           session_id?: string
         }
@@ -171,13 +168,6 @@ export type Database = {
             columns: ["conversion_rule_id"]
             isOneToOne: false
             referencedRelation: "conversion_rules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_conversions_last_video_start_id_fkey"
-            columns: ["last_video_start_id"]
-            isOneToOne: false
-            referencedRelation: "event_video_starts"
             referencedColumns: ["id"]
           },
           {
@@ -238,7 +228,6 @@ export type Database = {
       event_video_views: {
         Row: {
           created_at: string
-          duration_seconds: number
           id: string
           played_seconds: number
           session_id: string
@@ -247,7 +236,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          duration_seconds: number
           id?: string
           played_seconds: number
           session_id: string
@@ -256,7 +244,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          duration_seconds?: number
           id?: string
           played_seconds?: number
           session_id?: string

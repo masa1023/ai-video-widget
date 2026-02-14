@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -r dev",
+    "dev:widget": "pnpm --filter widget dev",
+    "dev:admin": "pnpm --filter admin dev",
     "build": "pnpm -r build",
     "build:widget": "pnpm --filter widget build",
     "build:admin": "pnpm --filter admin build",
