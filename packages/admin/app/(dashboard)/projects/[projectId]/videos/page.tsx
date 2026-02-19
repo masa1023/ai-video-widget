@@ -62,6 +62,7 @@ export default function VideosPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.projectId as string
+  const supabase = createClient()
 
   const [videos, setVideos] = useState<Video[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -437,19 +438,19 @@ export default function VideosPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => (
             <Card key={video.id} className="group">
-              <CardHeader className="pb-3">
+              <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2">
-                      <FileVideo className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                       <CardTitle className="text-base line-clamp-1">
                         {video.title}
                       </CardTitle>
-                      <CardDescription className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDuration(video.duration_seconds ?? 0)}
+                      <CardDescription className="">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Duration {formatDuration(video.duration_seconds ?? 0)}
+                        </div>
+                        Added {new Date(video.created_at).toLocaleDateString()}
                       </CardDescription>
                     </div>
                   </div>
@@ -484,9 +485,16 @@ export default function VideosPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-muted-foreground">
-                  Added {new Date(video.created_at).toLocaleDateString()}
-                </p>
+                <video
+                  src={
+                    supabase.storage
+                      .from('videos')
+                      .getPublicUrl(video.video_url).data?.publicUrl || ''
+                  }
+                  muted
+                  preload="metadata"
+                  className="h-24 w-20 rounded object-cover flex-shrink-0"
+                />
               </CardContent>
             </Card>
           ))}
