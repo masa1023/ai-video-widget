@@ -149,6 +149,10 @@ export default function AnalyticsPage() {
         totalPlayedSeconds,
         avgPlayedSeconds,
         avgPlayRate,
+        videoUrl: video?.video_url
+          ? supabase.storage.from('videos').getPublicUrl(video.video_url).data
+              ?.publicUrl || ''
+          : '',
       }
     })
 
@@ -355,10 +359,15 @@ export default function AnalyticsPage() {
                   {data.slotStats.map((stat) => (
                     <TableRow key={stat.slotId}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{stat.slotName}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {stat.videoTitle}
+                        <div className="flex items-center gap-3">
+                          <video
+                            src={stat.videoUrl}
+                            muted
+                            preload="metadata"
+                            className="h-16 w-10 rounded object-cover flex-shrink-0"
+                          />
+                          <div>
+                            <div className="font-medium">{stat.slotName}</div>
                           </div>
                         </div>
                       </TableCell>

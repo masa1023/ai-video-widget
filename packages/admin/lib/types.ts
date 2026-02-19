@@ -42,6 +42,7 @@ export interface AnalyticsData {
     totalPlayedSeconds: number
     avgPlayedSeconds: number
     avgPlayRate: number
+    videoUrl: string
   }[]
   clickBreakdown: {
     buttonType: string

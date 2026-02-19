@@ -46,6 +46,7 @@ import {
   Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 import type { Video, SlotWithVideo, Transition } from '@/lib/types'
 
 interface SlotGraphEditorProps {
@@ -53,9 +54,7 @@ interface SlotGraphEditorProps {
   slots: SlotWithVideo[]
   transitions: Transition[]
   canEdit: boolean
-  onSlotCreate: (
-    slot: Partial<SlotWithVideo>
-  ) => Promise<SlotWithVideo | null>
+  onSlotCreate: (slot: Partial<SlotWithVideo>) => Promise<SlotWithVideo | null>
   onSlotUpdate: (
     id: string,
     updates: Partial<SlotWithVideo>
@@ -80,6 +79,14 @@ export function SlotGraphEditor({
   onTransitionDelete,
 }: SlotGraphEditorProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
+  const supabase = createClient()
+
+  const getVideoPublicUrl = (videoUrl: string) => {
+    return (
+      supabase.storage.from('videos').getPublicUrl(videoUrl).data?.publicUrl ||
+      ''
+    )
+  }
 
   // Create slot dialog
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -436,21 +443,34 @@ export function SlotGraphEditor({
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-xs text-muted-foreground truncate mb-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <video
+                      src={getVideoPublicUrl(slot.video.video_url)}
+                      muted
+                      preload="metadata"
+                      className="h-16 w-10 rounded object-cover flex-shrink-0"
+                    />
+                    <div>
+                      {slot.detail_button_text && (
+                        <Badge variant="outline" className="text-xs">
+                          <ArrowRight className="h-3 w-3" />
+                          <span className="ml-1">
+                            {slot.detail_button_text}
+                          </span>
+                        </Badge>
+                      )}
+                      {slot.cta_button_text && (
+                        <Badge variant="outline" className="text-xs mt-1">
+                          <ArrowRight className="h-3 w-3" />
+                          <span className="ml-1">{slot.cta_button_text}</span>
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground truncate">
                     {slot.video.title}
                   </p>
-                  {slot.detail_button_text && (
-                    <Badge variant="outline" className="text-xs">
-                      <ArrowRight className="h-3 w-3" />
-                      <span className="ml-1">{slot.detail_button_text}</span>
-                    </Badge>
-                  )}
-                  {slot.cta_button_text && (
-                    <Badge variant="outline" className="text-xs mt-1">
-                      <ArrowRight className="h-3 w-3" />
-                      <span className="ml-1">{slot.cta_button_text}</span>
-                    </Badge>
-                  )}
                 </CardContent>
               </Card>
             </div>
