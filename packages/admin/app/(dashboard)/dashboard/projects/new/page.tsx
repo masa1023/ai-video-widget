@@ -195,7 +195,7 @@ export default function NewProjectPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end gap-2">
+          <CardFooter className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
